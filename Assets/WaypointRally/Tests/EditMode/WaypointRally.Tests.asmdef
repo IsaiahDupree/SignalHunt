@@ -1,0 +1,14 @@
+{
+  "name": "WaypointRally.Tests",
+  "rootNamespace": "WaypointRally.Tests",
+  "references": [
+    "SignalHunt.Runtime",
+    "WaypointRally.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

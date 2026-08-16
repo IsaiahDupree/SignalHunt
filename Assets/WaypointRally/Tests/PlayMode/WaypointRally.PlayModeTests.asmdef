@@ -1,0 +1,11 @@
+{
+  "name": "WaypointRally.PlayModeTests",
+  "rootNamespace": "WaypointRally.PlayModeTests",
+  "references": [
+    "SignalHunt.Runtime",
+    "WaypointRally.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
