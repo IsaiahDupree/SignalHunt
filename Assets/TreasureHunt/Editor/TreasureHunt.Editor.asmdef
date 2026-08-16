@@ -1,0 +1,12 @@
+{
+  "name": "TreasureHunt.Editor",
+  "rootNamespace": "TreasureHunt.Editor",
+  "references": [
+    "SignalHunt.Runtime",
+    "TreasureHunt.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}

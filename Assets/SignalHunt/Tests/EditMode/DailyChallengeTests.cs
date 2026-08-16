@@ -125,7 +125,7 @@ namespace SignalHunt.Tests
         [Test]
         public void ReplayEnvelopeRoundTripsForEveryAppShell()
         {
-            Assert.That(DailyGameCatalog.All.Count, Is.EqualTo(3));
+            Assert.That(DailyGameCatalog.All.Count, Is.EqualTo(4));
             foreach (var profile in DailyGameCatalog.All)
             {
                 var replay = ReplayWithResult(true, 90000, 19000);
