@@ -1,12 +1,13 @@
 # Signal Hunt
 
-This repository contains three compact daily challenge games for iOS. Every player receives the same procedurally generated stage for the current UTC date, can retry it without limit, and records reconstructable runs for ghosts, leaderboards, and social replays.
+This public repository contains four compact daily challenge games for iOS. Every player receives the same procedurally generated stage for the current UTC date, can retry it without limit, and records reconstructable runs for ghosts, leaderboards, and social replays.
 
 The app network shares the daily-seed, identity, cosmetics, backend, leaderboard, replay, and Daily Film engine while shipping as separate Unity scenes and products:
 
 - **Signal Hunt** — playable; find hidden relics in a rotating daily world.
 - **Waypoint Wings** — playable; fly through a vertical daily course.
 - **Waypoint Rally** — playable; choose the fastest route through ground checkpoints.
+- **Treasure Hunter** — playable; search on foot with a detector and secure 12 artifacts in any order.
 
 ## Play Signal Hunt
 
@@ -32,6 +33,12 @@ Open `Assets/WaypointRally/Scenes/Main.unity` and press Play. Drive through all 
 
 Waypoint Rally saves unlimited attempts, reconstructs personal-best and daily-leader car ghosts, and provides `WATCH RACE`, `DAILY FILM`, and `RACE AGAIN` after every round. Players share the checkpoint order while remaining free to discover a faster line between checkpoints.
 
+## Play Treasure Hunter
+
+Open `Assets/TreasureHunt/Scenes/Main.unity` and press Play. Explore on foot with `LEFT`, `RIGHT`, `RUN`, and `SCAN`, or use A/D, W, and Space/E. The detector reports the nearest unfound artifact's strength, distance, and relative bearing; a scan pulse briefly amplifies nearby artifact caches.
+
+The UTC date alternates between the bright, overgrown Sunken Ruins and the nocturnal Crystal Hollow. Each programmatic world contains the same 12 safe, separated hiding locations for every player that day. Treasure Hunter records search routes at 10 Hz, reconstructs personal-best and daily-leader explorer ghosts, saves unlimited attempts, and offers `WATCH SEARCH`, `DAILY FILM`, and `HUNT AGAIN` after every round.
+
 ## What is implemented
 
 - Stable UTC daily challenge IDs and platform-independent xorshift generation.
@@ -48,7 +55,8 @@ Waypoint Rally saves unlimited attempts, reconstructs personal-best and daily-le
 - A Daily Film director that reconstructs up to 16 real racers, time-compresses their routes, switches racers/angles every three seconds, and records a vertical social clip through ReplayKit.
 - A separate Waypoint Wings app shell with two deterministic vertical stages, arcade aircraft controls, 14 ordered flight gates, aircraft ghosts, flight scoring, retry flow, and an aircraft-specific Daily Film.
 - A separate Waypoint Rally app shell with two deterministic ground stages, 10 ordered checkpoints, open route choice, a programmatic rally car, driver ghosts, scoring, retry flow, and a rally-specific Daily Film.
-- Shared `appKey`/`modeKey` replay contracts and generic backend RPCs for Signal Hunt, Waypoint Rally, and Waypoint Wings.
+- A separate Treasure Hunter app shell with two deterministic exploration stages, 12 any-order artifacts, an on-foot controller, directional detector, scan pulse, explorer ghosts, scoring, retry flow, and an explorer-specific Daily Film.
+- Shared `appKey`/`modeKey` replay contracts and generic backend RPCs for Signal Hunt, Waypoint Rally, Waypoint Wings, and Treasure Hunter.
 - Supabase anonymous authentication, token refresh, challenge claiming, validated run submission, top-ten leaderboard, top ghost, profiles, cosmetics, and inventory schema.
 - Portrait safe-area HUD and an automated standalone visual smoke-capture mode.
 
@@ -127,6 +135,17 @@ Build the separate Waypoint Rally preview:
 
 Use `--rally-stage town` or `--rally-stage dustlands` to inspect either deterministic ground-racing stage.
 
+Build the separate Treasure Hunter preview:
+
+```bash
+"$SIGNAL_HUNT_UNITY" -batchmode -nographics -noaudio -quit \
+  -projectPath "$PWD" \
+  -executeMethod TreasureHunt.Editor.TreasureHuntProjectBuilder.BuildMacPreview \
+  -logFile Logs/mac-treasure-build.log
+```
+
+Use `--treasure-stage ruins` or `--treasure-stage crystals` to inspect either deterministic exploration stage. Automated visual checks can also pin a seed date with `--treasure-date YYYY-MM-DD`.
+
 The UTC daily challenge alternates stages automatically. To inspect a specific stage in a development build, add either `--signalhunt-stage city` or `--signalhunt-stage island` to the player command line.
 
 Build the Xcode iOS project after installing Unity's iOS Build Support module:
@@ -177,8 +196,11 @@ Assets/WaypointWings/Tests           flight generator and full-loop smoke tests
 Assets/WaypointRally/Runtime         rally challenge, world, car, replay, and UI
 Assets/WaypointRally/Editor          separate scene and macOS/iOS app builders
 Assets/WaypointRally/Tests           rally generator and full-loop smoke tests
+Assets/TreasureHunt/Runtime          exploration challenge, world, detector, replay, and UI
+Assets/TreasureHunt/Editor           separate scene and macOS/iOS app builders
+Assets/TreasureHunt/Tests            treasure generator and full-loop smoke tests
 supabase/migrations                  shared production backend schema
 ```
 
-See `docs/SHARED-ENGINE.md` for the three-app boundary and the next build slices.
+See `docs/SHARED-ENGINE.md` for the four-app boundary and the next build slices.
 See `docs/DAILY-FILM.md` for the attempt, leaderboard, ghost, and social montage flow.

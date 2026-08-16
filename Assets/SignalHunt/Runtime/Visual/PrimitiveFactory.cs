@@ -68,5 +68,26 @@ namespace SignalHunt.Visual
             }
             return instance;
         }
+
+        public static GameObject Capsule(
+            string name,
+            Transform parent,
+            Vector3 position,
+            Vector3 scale,
+            Material material,
+            bool collider = true)
+        {
+            var instance = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            instance.name = name;
+            instance.transform.SetParent(parent, false);
+            instance.transform.localPosition = position;
+            instance.transform.localScale = scale;
+            instance.GetComponent<Renderer>().sharedMaterial = material;
+            if (!collider)
+            {
+                Object.Destroy(instance.GetComponent<Collider>());
+            }
+            return instance;
+        }
     }
 }

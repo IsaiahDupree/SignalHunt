@@ -165,7 +165,7 @@ namespace TreasureHunt.World
                 });
             }
             AddArtifactCover(layout, random, TreasurePropKind.Crystal);
-            AddProps(layout, random, TreasurePropKind.Rock, 42, 2f, 7f, 1.5f, 6f);
+            AddProps(layout, random, TreasurePropKind.Rock, 36, 1.6f, 4.8f, 1.2f, 3.8f);
             AddProps(layout, random, TreasurePropKind.Crystal, 38, 0.8f, 2.8f, 2f, 8f);
             AddProps(layout, random, TreasurePropKind.Pillar, 18, 1.8f, 4f, 4f, 11f);
             for (var index = 0; index < 22; index++)
@@ -204,7 +204,16 @@ namespace TreasureHunt.World
         {
             for (var index = 0; index < count; index++)
             {
-                var position = new Vector3(random.Range(-84f, 84f), 0f, random.Range(-84f, 84f));
+                Vector3 position = default;
+                for (var attempt = 0; attempt < 64; attempt++)
+                {
+                    position = new Vector3(random.Range(-84f, 84f), 0f, random.Range(-84f, 84f));
+                    if (Vector3.Distance(position, layout.playerSpawn) > 9f &&
+                        IsClearOfArtifacts(position, layout.artifacts, 7f))
+                    {
+                        break;
+                    }
+                }
                 layout.props.Add(new TreasurePropDefinition
                 {
                     kind = kind,
@@ -215,6 +224,19 @@ namespace TreasureHunt.World
                     styleIndex = random.Range(0, 4)
                 });
             }
+        }
+
+        private static bool IsClearOfArtifacts(Vector3 position,
+            IReadOnlyList<TreasureArtifactDefinition> artifacts, float minimum)
+        {
+            for (var index = 0; index < artifacts.Count; index++)
+            {
+                if (Vector3.Distance(position, artifacts[index].position) < minimum)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

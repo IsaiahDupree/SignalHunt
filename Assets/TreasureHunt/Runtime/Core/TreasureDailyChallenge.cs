@@ -47,12 +47,29 @@ namespace TreasureHunt.Core
         public static DailyChallenge Today()
         {
             var stage = StageOverrideFromCommandLine();
+            var commandLineDate = DateOverrideFromCommandLine();
+            if (commandLineDate.HasValue)
+            {
+                return ForUtcDate(commandLineDate.Value, stage);
+            }
             var overrideDate = UnityEngine.PlayerPrefs.GetString("treasurehunt.challenge_date", string.Empty);
             if (DateTime.TryParse(overrideDate, out var parsed))
             {
                 return ForUtcDate(DateTime.SpecifyKind(parsed, DateTimeKind.Utc), stage);
             }
             return ForUtcDate(DateTime.UtcNow, stage);
+        }
+
+        private static DateTime? DateOverrideFromCommandLine()
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            var marker = Array.IndexOf(arguments, "--treasure-date");
+            if (marker < 0 || marker + 1 >= arguments.Length ||
+                !DateTime.TryParse(arguments[marker + 1], out var parsed))
+            {
+                return null;
+            }
+            return DateTime.SpecifyKind(parsed.Date, DateTimeKind.Utc);
         }
 
         private static TreasureStage? StageOverrideFromCommandLine()
