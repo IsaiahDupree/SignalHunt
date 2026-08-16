@@ -71,7 +71,7 @@ export SUPABASE_URL="https://your-project.supabase.co"
 export SIGNAL_HUNT_SUPABASE_ANON_KEY="your-public-anon-key"
 ```
 
-For an iOS build the editor builder injects those values into a temporary Resources asset, includes it in the player, and deletes the asset after the build. The generated config asset is ignored by Git.
+For an iOS build the editor builder injects those values into a temporary Resources asset, includes it in the player, and deletes the asset after the build. The generated config asset is ignored by Git. If the public URL and anonymous key are absent, every app still builds in honest offline mode without a runtime config or fabricated network data.
 
 Without client configuration, the complete game loop and local replay/ghost remain functional; the result explicitly reports that the run was saved locally instead of presenting fabricated leaderboard data.
 
@@ -156,6 +156,14 @@ Build the Xcode iOS project after installing Unity's iOS Build Support module:
   -executeMethod SignalHunt.Editor.SignalHuntProjectBuilder.BuildIos \
   -logFile Logs/ios-build.log
 ```
+
+To export, sign, install, and launch one app on a paired iPhone over Wi-Fi, supply the identifier shown by `xcrun devicectl list devices` and the Apple development team shown by Xcode:
+
+```bash
+./scripts/build-ios-wireless.sh treasure-hunter "$IOS_DEVICE_ID" "$IOS_DEVELOPMENT_TEAM"
+```
+
+Use `signal-hunt`, `waypoint-wings`, or `waypoint-rally` for a single app, or `all` to deploy the complete suite. The phone must be paired, reachable on the local network, and have Developer Mode enabled. The script uses an existing Apple Development certificate and device provisioning profile; it never accepts or stores an Apple password or API key.
 
 ## Daily seed contract
 

@@ -72,7 +72,7 @@ namespace WaypointWings.Editor
         public static void BuildIos()
         {
             SetupProject();
-            CreateRuntimeConfig();
+            var hasRuntimeConfig = TryCreateRuntimeConfig();
             try
             {
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
@@ -89,19 +89,26 @@ namespace WaypointWings.Editor
             }
             finally
             {
-                AssetDatabase.DeleteAsset(ConfigAssetPath);
-                AssetDatabase.Refresh();
+                if (hasRuntimeConfig)
+                {
+                    AssetDatabase.DeleteAsset(ConfigAssetPath);
+                    AssetDatabase.Refresh();
+                }
             }
         }
 
-        private static void CreateRuntimeConfig()
+        private static bool TryCreateRuntimeConfig()
         {
+            AssetDatabase.DeleteAsset(ConfigAssetPath);
+            AssetDatabase.Refresh();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var key = Environment.GetEnvironmentVariable("SIGNAL_HUNT_SUPABASE_ANON_KEY") ??
                       Environment.GetEnvironmentVariable("SUPABASE_ANON_KEY");
             if (!Uri.TryCreate(url, UriKind.Absolute, out _) || string.IsNullOrWhiteSpace(key))
             {
-                throw new BuildFailedException("Set SUPABASE_URL and SIGNAL_HUNT_SUPABASE_ANON_KEY before building iOS.");
+                Debug.LogWarning(
+                    "Building Waypoint Wings in honest offline mode. Set SUPABASE_URL and SIGNAL_HUNT_SUPABASE_ANON_KEY to enable the live leaderboard.");
+                return false;
             }
             Directory.CreateDirectory("Assets/Resources");
             var config = ScriptableObject.CreateInstance<SignalHuntRuntimeConfig>();
@@ -109,6 +116,7 @@ namespace WaypointWings.Editor
             config.supabaseAnonKey = key;
             AssetDatabase.CreateAsset(config, ConfigAssetPath);
             AssetDatabase.SaveAssets();
+            return true;
         }
 
         private static void EnsureRuntimeShaders()
