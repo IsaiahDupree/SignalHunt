@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace SignalHunt.Gameplay
@@ -18,6 +19,31 @@ namespace SignalHunt.Gameplay
         private Camera _camera;
         private HoverVehicleController _vehicle;
         private ReplayCameraShot _cinematicShot;
+        private Func<float> _speedProvider;
+        private float _baseDistance = 6.8f;
+        private float _fastDistance = 8.4f;
+        private float _height = 3.45f;
+        private float _lookAhead = 2.2f;
+        private float _minimumFov = 62f;
+        private float _maximumFov = 72f;
+        private float _speedForMaximumFov = 30f;
+
+        public void ConfigureGameplay(float baseDistance, float fastDistance, float height, float lookAhead,
+            float minimumFov, float maximumFov, float speedForMaximumFov)
+        {
+            _baseDistance = baseDistance;
+            _fastDistance = fastDistance;
+            _height = height;
+            _lookAhead = lookAhead;
+            _minimumFov = minimumFov;
+            _maximumFov = maximumFov;
+            _speedForMaximumFov = Mathf.Max(1f, speedForMaximumFov);
+        }
+
+        public void SetSpeedProvider(Func<float> speedProvider)
+        {
+            _speedProvider = speedProvider;
+        }
 
         public void SetTarget(Transform target, bool cinematic = false, ReplayCameraShot shot = ReplayCameraShot.Orbit)
         {
@@ -50,15 +76,16 @@ namespace SignalHunt.Gameplay
             transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, smoothTime);
             var lookTarget = _cinematic && _cinematicShot == ReplayCameraShot.Overhead
                 ? _target.position
-                : _target.position + Vector3.up * 0.45f + _target.forward * 2.2f;
+                : _target.position + Vector3.up * 0.45f + _target.forward * _lookAhead;
             transform.rotation = Quaternion.Slerp(transform.rotation,
                 Quaternion.LookRotation(lookTarget - transform.position, Vector3.up),
                 Time.deltaTime * (_cinematic ? 3f : 7f));
 
             if (_camera != null && !_cinematic)
             {
-                var speed = _vehicle == null ? 0f : _vehicle.Speed;
-                _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, Mathf.Lerp(62f, 72f, Mathf.Clamp01(speed / 30f)), Time.deltaTime * 3f);
+                var speed = CurrentSpeed();
+                _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView,
+                    Mathf.Lerp(_minimumFov, _maximumFov, Mathf.Clamp01(speed / _speedForMaximumFov)), Time.deltaTime * 3f);
             }
         }
 
@@ -76,9 +103,11 @@ namespace SignalHunt.Gameplay
                 };
             }
 
-            var speed = _vehicle == null ? 0f : _vehicle.Speed;
-            var pullback = Mathf.Lerp(6.8f, 8.4f, Mathf.Clamp01(speed / 30f));
-            return _target.position - _target.forward * pullback + Vector3.up * 3.45f;
+            var speed = CurrentSpeed();
+            var pullback = Mathf.Lerp(_baseDistance, _fastDistance, Mathf.Clamp01(speed / _speedForMaximumFov));
+            return _target.position - _target.forward * pullback + Vector3.up * _height;
         }
+
+        private float CurrentSpeed() => _speedProvider?.Invoke() ?? (_vehicle == null ? 0f : _vehicle.Speed);
     }
 }

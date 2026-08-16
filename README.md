@@ -1,8 +1,8 @@
 # Signal Hunt
 
-Signal Hunt is a compact daily hunt racer for iOS. Every player receives the same procedurally generated stage for the current UTC date, drives the same hover car, and races to collect ten signal relics. Runs produce a deterministic score, a reconstructable ghost, daily leaderboard data, and an iOS ReplayKit highlight that can be saved or shared.
+This repository contains two compact daily challenge games for iOS. Every player receives the same procedurally generated stage for the current UTC date, can retry it without limit, and records reconstructable runs for ghosts, leaderboards, and social replays.
 
-This repository contains the first playable app and the reusable foundation for two later app shells:
+The apps share the daily-seed, identity, cosmetics, backend, leaderboard, replay, and Daily Film engine while shipping as separate Unity scenes and products:
 
 - **Signal Hunt** — find hidden relics in a rotating daily world.
 - **Waypoint Rally** — route-optimize through ground checkpoints.
@@ -20,6 +20,12 @@ Controls:
 
 The run begins after a three-second countdown. Collect all ten signals; the result panel saves the attempt, shows the improvement against your daily best, syncs the live board when Supabase is configured, and offers `RACE AGAIN`, `WATCH / SHARE`, and `DAILY FILM`.
 
+## Play Waypoint Wings
+
+Open `Assets/WaypointWings/Scenes/Main.unity` and press Play. Fly the aircraft through all 14 gates in order using the on-screen `LEFT`, `RIGHT`, `DOWN`, `UP`, and `BOOST` controls or the keyboard. The UTC date alternates between the bright Sunrise Archipelago and Neon Skyway stages.
+
+Waypoint Wings records each flight at 10 Hz, plays personal-best and daily-leader aircraft ghosts, saves unlimited same-day attempts, and provides `WATCH FLIGHT`, `DAILY FILM`, and `FLY AGAIN` after every round. Its Daily Film reconstructs up to 16 real aircraft runs through cinematic chase, overhead, orbit, and wide cameras.
+
 ## What is implemented
 
 - Stable UTC daily challenge IDs and platform-independent xorshift generation.
@@ -34,6 +40,7 @@ The run begins after a three-second countdown. Collect all ten signals; the resu
 - Local personal-best ghost playback and share-caption metadata.
 - Cinematic replay playback with orbit, chase, overhead, and wide camera cuts; iOS device builds use ReplayKit's native preview/save/share sheet.
 - A Daily Film director that reconstructs up to 16 real racers, time-compresses their routes, switches racers/angles every three seconds, and records a vertical social clip through ReplayKit.
+- A separate Waypoint Wings app shell with two deterministic vertical stages, arcade aircraft controls, 14 ordered flight gates, aircraft ghosts, flight scoring, retry flow, and an aircraft-specific Daily Film.
 - Shared `appKey`/`modeKey` replay contracts and generic backend RPCs for Signal Hunt, Waypoint Rally, and Waypoint Wings.
 - Supabase anonymous authentication, token refresh, challenge claiming, validated run submission, top-ten leaderboard, top ghost, profiles, cosmetics, and inventory schema.
 - Portrait safe-area HUD and an automated standalone visual smoke-capture mode.
@@ -91,6 +98,17 @@ Build the local macOS preview:
   -logFile Logs/mac-build.log
 ```
 
+Build the separate Waypoint Wings preview:
+
+```bash
+"$SIGNAL_HUNT_UNITY" -batchmode -nographics -noaudio -quit \
+  -projectPath "$PWD" \
+  -executeMethod WaypointWings.Editor.WaypointWingsProjectBuilder.BuildMacPreview \
+  -logFile Logs/mac-wings-build.log
+```
+
+Use `--wings-stage archipelago` or `--wings-stage skyway` to inspect either deterministic flight stage in a development build.
+
 The UTC daily challenge alternates stages automatically. To inspect a specific stage in a development build, add either `--signalhunt-stage city` or `--signalhunt-stage island` to the player command line.
 
 Build the Xcode iOS project after installing Unity's iOS Build Support module:
@@ -135,6 +153,9 @@ Assets/SignalHunt/Runtime/Backend    Supabase auth and API client
 Assets/SignalHunt/Runtime/UI         portrait HUD and touch controls
 Assets/SignalHunt/Editor             reproducible scene and platform builders
 Assets/SignalHunt/Tests              deterministic and play-mode smoke tests
+Assets/WaypointWings/Runtime         flight challenge, world, aircraft, replay, and UI
+Assets/WaypointWings/Editor          separate scene and macOS/iOS app builders
+Assets/WaypointWings/Tests           flight generator and full-loop smoke tests
 supabase/migrations                  shared production backend schema
 ```
 
