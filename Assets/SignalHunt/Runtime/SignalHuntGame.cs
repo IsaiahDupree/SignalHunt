@@ -22,15 +22,6 @@ namespace SignalHunt
         private CinematicReplayExporter _exporter;
         private DailyMontageExporter _montageExporter;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void EnsureBootstrap()
-        {
-            if (FindAnyObjectByType<SignalHuntGame>() == null)
-            {
-                new GameObject("Signal Hunt").AddComponent<SignalHuntGame>();
-            }
-        }
-
         private void Start()
         {
             Application.targetFrameRate = 60;

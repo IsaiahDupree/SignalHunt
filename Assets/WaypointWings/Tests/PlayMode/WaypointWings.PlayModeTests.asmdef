@@ -1,0 +1,11 @@
+{
+  "name": "WaypointWings.PlayModeTests",
+  "rootNamespace": "WaypointWings.PlayModeTests",
+  "references": [
+    "SignalHunt.Runtime",
+    "WaypointWings.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
