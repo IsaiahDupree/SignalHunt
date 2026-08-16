@@ -86,7 +86,7 @@ namespace SignalHunt.UI
             var accent = Panel("Header Accent", topPanel, new Vector2(0f, 0.12f), new Vector2(0.012f, 0.88f), Cyan);
             accent.GetComponent<Image>().raycastTarget = false;
             Text("SIGNAL HUNT", topPanel, new Vector2(0.05f, 0.50f), new Vector2(0.56f, 0.91f), 44, FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
-            Text($"TODAY · {challenge.dateKey} · SEED {challenge.displaySeed:D5}", topPanel,
+            Text($"{challenge.stageDisplayName.ToUpperInvariant()} · {challenge.dateKey} · {challenge.displaySeed:D5}", topPanel,
                 new Vector2(0.05f, 0.13f), new Vector2(0.65f, 0.50f), 22, FontStyle.Normal,
                 MutedText, TextAnchor.MiddleLeft);
             _timeText = Text("00:00.000", topPanel, new Vector2(0.59f, 0.52f), new Vector2(0.94f, 0.90f),

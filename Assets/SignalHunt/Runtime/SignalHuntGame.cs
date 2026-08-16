@@ -38,20 +38,38 @@ namespace SignalHunt
             QualitySettings.shadowResolution = ShadowResolution.Medium;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Screen.orientation = ScreenOrientation.Portrait;
-            ConfigureRendering();
 
             var challenge = DailyChallenge.Today();
-            var layout = TownLayoutGenerator.Generate(challenge);
+            ConfigureRendering(challenge);
             _palette = new GamePalette();
             _palette.ApplyVehicleColor(PlayerCosmetics.VehicleColorIndex);
 
             _session = gameObject.AddComponent<HuntSession>();
-            TownWorldBuilder.Build(layout, _palette, relicId => _session.Collect(relicId));
-            var vehicle = HoverVehicleFactory.CreatePlayer(_palette, layout.playerSpawn, layout.playerHeading);
-            WorldNameplate.Create(vehicle.transform, PlayerIdentity.DisplayName);
-            _session.Initialize(challenge, vehicle, layout.relics.Count);
+            Vector3 playerSpawn;
+            float playerHeading;
+            int relicCount;
+            if (challenge.Stage == WorldStage.Island)
+            {
+                var island = IslandLayoutGenerator.Generate(challenge);
+                IslandWorldBuilder.Build(island, _palette, relicId => _session.Collect(relicId));
+                playerSpawn = island.playerSpawn;
+                playerHeading = island.playerHeading;
+                relicCount = island.relics.Count;
+            }
+            else
+            {
+                var town = TownLayoutGenerator.Generate(challenge);
+                TownWorldBuilder.Build(town, _palette, relicId => _session.Collect(relicId));
+                playerSpawn = town.playerSpawn;
+                playerHeading = town.playerHeading;
+                relicCount = town.relics.Count;
+            }
 
-            var followCamera = BuildCamera(vehicle.transform);
+            var vehicle = HoverVehicleFactory.CreatePlayer(_palette, playerSpawn, playerHeading);
+            WorldNameplate.Create(vehicle.transform, PlayerIdentity.DisplayName);
+            _session.Initialize(challenge, vehicle, relicCount);
+
+            var followCamera = BuildCamera(vehicle.transform, challenge);
             _hud = gameObject.AddComponent<HuntHud>();
             _hud.Initialize(_session, challenge);
             _hud.TrackVehicle(vehicle);
@@ -115,45 +133,48 @@ namespace SignalHunt
             }));
         }
 
-        private static FollowCamera BuildCamera(Transform target)
+        private static FollowCamera BuildCamera(Transform target, DailyChallenge challenge)
         {
             var cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
             var camera = cameraObject.AddComponent<Camera>();
-            camera.fieldOfView = 62f;
+            camera.fieldOfView = challenge.Stage == WorldStage.Island ? 59f : 62f;
             camera.nearClipPlane = 0.08f;
-            camera.farClipPlane = 260f;
+            camera.farClipPlane = challenge.Stage == WorldStage.Island ? 360f : 260f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.008f, 0.014f, 0.045f);
+            camera.backgroundColor = challenge.Stage == WorldStage.Island
+                ? new Color(0.55f, 0.75f, 0.82f)
+                : new Color(0.008f, 0.014f, 0.045f);
             var follow = cameraObject.AddComponent<FollowCamera>();
             follow.SetTarget(target);
             return follow;
         }
 
-        private static void ConfigureRendering()
+        private static void ConfigureRendering(DailyChallenge challenge)
         {
+            var island = challenge.Stage == WorldStage.Island;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = 0.0042f;
-            RenderSettings.fogColor = new Color(0.025f, 0.045f, 0.12f);
+            RenderSettings.fogDensity = island ? 0.0028f : 0.0042f;
+            RenderSettings.fogColor = island ? new Color(0.67f, 0.79f, 0.80f) : new Color(0.025f, 0.045f, 0.12f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.18f, 0.25f, 0.46f);
-            RenderSettings.ambientEquatorColor = new Color(0.08f, 0.10f, 0.19f);
-            RenderSettings.ambientGroundColor = new Color(0.025f, 0.032f, 0.065f);
+            RenderSettings.ambientSkyColor = island ? new Color(0.64f, 0.78f, 0.86f) : new Color(0.18f, 0.25f, 0.46f);
+            RenderSettings.ambientEquatorColor = island ? new Color(0.45f, 0.57f, 0.48f) : new Color(0.08f, 0.10f, 0.19f);
+            RenderSettings.ambientGroundColor = island ? new Color(0.18f, 0.27f, 0.16f) : new Color(0.025f, 0.032f, 0.065f);
 
-            var lightObject = new GameObject("Synthetic Moon");
+            var lightObject = new GameObject(island ? "Island Sun" : "Synthetic Moon");
             var light = lightObject.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.color = new Color(0.48f, 0.64f, 1f);
-            light.intensity = 1.32f;
+            light.color = island ? new Color(1f, 0.93f, 0.75f) : new Color(0.48f, 0.64f, 1f);
+            light.intensity = island ? 1.18f : 1.32f;
             light.shadows = LightShadows.Soft;
-            lightObject.transform.rotation = Quaternion.Euler(48f, -32f, 0f);
+            lightObject.transform.rotation = Quaternion.Euler(island ? 54f : 48f, island ? -38f : -32f, 0f);
 
             var rimObject = new GameObject("Neon Rim Light");
             var rim = rimObject.AddComponent<Light>();
             rim.type = LightType.Directional;
-            rim.color = new Color(1f, 0.16f, 0.66f);
-            rim.intensity = 0.42f;
+            rim.color = island ? new Color(0.25f, 0.64f, 0.75f) : new Color(1f, 0.16f, 0.66f);
+            rim.intensity = island ? 0.26f : 0.42f;
             rim.shadows = LightShadows.None;
             rimObject.transform.rotation = Quaternion.Euler(35f, 145f, 0f);
         }

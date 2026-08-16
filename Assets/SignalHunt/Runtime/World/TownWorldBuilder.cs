@@ -214,7 +214,7 @@ namespace SignalHunt.World
                 new Vector3(7.5f, 0.5f, 0.7f), material);
         }
 
-        private static void BuildRelic(Transform parent, RelicDefinition definition, GamePalette palette, Action<string> onCollected)
+        public static void BuildRelic(Transform parent, RelicDefinition definition, GamePalette palette, Action<string> onCollected)
         {
             var holder = new GameObject(definition.id);
             holder.transform.SetParent(parent, false);

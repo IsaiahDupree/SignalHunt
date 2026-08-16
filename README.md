@@ -1,10 +1,10 @@
 # Signal Hunt
 
-Signal Hunt is a compact daily hunt racer for iOS. Every player receives the same procedurally generated synthetic town for the current UTC date, drives the same hover car, and races to collect ten signal relics. Runs produce a deterministic score, a reconstructable ghost, daily leaderboard data, and an iOS ReplayKit highlight that can be saved or shared.
+Signal Hunt is a compact daily hunt racer for iOS. Every player receives the same procedurally generated stage for the current UTC date, drives the same hover car, and races to collect ten signal relics. Runs produce a deterministic score, a reconstructable ghost, daily leaderboard data, and an iOS ReplayKit highlight that can be saved or shared.
 
 This repository contains the first playable app and the reusable foundation for two later app shells:
 
-- **Signal Hunt** — find hidden relics in a daily town.
+- **Signal Hunt** — find hidden relics in a rotating daily world.
 - **Waypoint Rally** — route-optimize through ground checkpoints.
 - **Waypoint Wings** — fly through a vertical daily course.
 
@@ -23,6 +23,8 @@ The run begins after a three-second countdown. Collect all ten signals; the resu
 ## What is implemented
 
 - Stable UTC daily challenge IDs and platform-independent xorshift generation.
+- Two rotating daily stages: the generated neon city and the low-poly Emerald Isle.
+- A fully programmatic island with faceted terrain, beaches, surrounding water, rolling hills, a closed rally road, ramps, pine trees, rocks, lighting, and ten safe/separated relics.
 - A generated neon town with roads, alleys, buildings, plazas, ramps, tunnel gates, lighting, and ten safe/separated relics.
 - Physics hover-car controller with touch and keyboard input.
 - Timer, completion rules, deterministic scoring, player nameplate, and vehicle color selection.
@@ -85,6 +87,8 @@ Build the local macOS preview:
   -logFile Logs/mac-build.log
 ```
 
+The UTC daily challenge alternates stages automatically. To inspect a specific stage in a development build, add either `--signalhunt-stage city` or `--signalhunt-stage island` to the player command line.
+
 Build the Xcode iOS project after installing Unity's iOS Build Support module:
 
 ```bash
@@ -108,7 +112,13 @@ For example, `2026-08-15` produces:
 2026-08-15_city_neon_standard_seed_95713
 ```
 
-Do not change `StableHash`, `DeterministicRandom`, or generator ordering inside an existing generation version. Ship intentional changes as `synthetic-town-v2` so stored ghosts remain reconstructable.
+The following day produces the shared island challenge:
+
+```text
+2026-08-16_island_coastal_standard_seed_62010
+```
+
+Do not change `StableHash`, `DeterministicRandom`, or generator ordering inside an existing generation version. Ship intentional changes as a new world-template version, such as `synthetic-town-v2` or `synthetic-island-v2`, so stored ghosts remain reconstructable.
 
 ## Repository map
 

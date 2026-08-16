@@ -18,9 +18,21 @@ namespace SignalHunt.Editor
         public static void SetupProject()
         {
             Directory.CreateDirectory("Assets/SignalHunt/Scenes");
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            new GameObject("Signal Hunt").AddComponent<SignalHuntGame>();
-            EditorSceneManager.SaveScene(scene, MainScenePath);
+            if (!File.Exists(MainScenePath))
+            {
+                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                new GameObject("Signal Hunt").AddComponent<SignalHuntGame>();
+                EditorSceneManager.SaveScene(scene, MainScenePath);
+            }
+            else
+            {
+                var scene = EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+                if (UnityEngine.Object.FindFirstObjectByType<SignalHuntGame>() == null)
+                {
+                    new GameObject("Signal Hunt").AddComponent<SignalHuntGame>();
+                    EditorSceneManager.SaveScene(scene, MainScenePath);
+                }
+            }
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScenePath, true) };
 
             PlayerSettings.companyName = "Isaiah Dupree";

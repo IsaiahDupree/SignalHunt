@@ -3,6 +3,12 @@ using UnityEngine;
 
 namespace SignalHunt.Core
 {
+    public enum WorldStage
+    {
+        City,
+        Island
+    }
+
     [Serializable]
     public sealed class DailyChallenge
     {
@@ -12,16 +18,23 @@ namespace SignalHunt.Core
         public string theme;
         public string difficulty;
         public string worldTemplate;
+        public string stageKey;
+        public string stageDisplayName;
         public int displaySeed;
         public uint generationSeed;
         public int collectibleCount;
 
-        public static DailyChallenge ForUtcDate(DateTime utcDate)
+        public WorldStage Stage => stageKey == "island" ? WorldStage.Island : WorldStage.City;
+
+        public static DailyChallenge ForUtcDate(DateTime utcDate, WorldStage? forcedStage = null)
         {
             var date = utcDate.ToUniversalTime().Date;
-            const string theme = "neon";
             const string difficulty = "standard";
-            const string template = "synthetic-town-v1";
+            var stage = forcedStage ?? (date.DayOfYear % 2 == 0 ? WorldStage.Island : WorldStage.City);
+            var stageKey = stage == WorldStage.Island ? "island" : "city";
+            var stageDisplayName = stage == WorldStage.Island ? "Emerald Isle" : "Neon District";
+            var theme = stage == WorldStage.Island ? "coastal" : "neon";
+            var template = stage == WorldStage.Island ? "synthetic-island-v1" : "synthetic-town-v1";
             var season = SeasonFor(date.Month);
             var dateKey = date.ToString("yyyy-MM-dd");
             var identity = $"{dateKey}|{season}|{theme}|{difficulty}|{template}";
@@ -30,12 +43,14 @@ namespace SignalHunt.Core
 
             return new DailyChallenge
             {
-                challengeId = $"{dateKey}_city_{theme}_{difficulty}_seed_{displaySeed:D5}",
+                challengeId = $"{dateKey}_{stageKey}_{theme}_{difficulty}_seed_{displaySeed:D5}",
                 dateKey = dateKey,
                 season = season,
                 theme = theme,
                 difficulty = difficulty,
                 worldTemplate = template,
+                stageKey = stageKey,
+                stageDisplayName = stageDisplayName,
                 displaySeed = displaySeed,
                 generationSeed = generationSeed,
                 collectibleCount = 10
@@ -44,13 +59,31 @@ namespace SignalHunt.Core
 
         public static DailyChallenge Today()
         {
+            var forcedStage = StageOverrideFromCommandLine();
             var overrideDate = PlayerPrefs.GetString("signalhunt.challenge_date", string.Empty);
             if (DateTime.TryParse(overrideDate, out var parsed))
             {
-                return ForUtcDate(DateTime.SpecifyKind(parsed, DateTimeKind.Utc));
+                return ForUtcDate(DateTime.SpecifyKind(parsed, DateTimeKind.Utc), forcedStage);
             }
 
-            return ForUtcDate(DateTime.UtcNow);
+            return ForUtcDate(DateTime.UtcNow, forcedStage);
+        }
+
+        private static WorldStage? StageOverrideFromCommandLine()
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            var marker = Array.IndexOf(arguments, "--signalhunt-stage");
+            if (marker < 0 || marker + 1 >= arguments.Length)
+            {
+                return null;
+            }
+
+            return arguments[marker + 1].ToLowerInvariant() switch
+            {
+                "city" => WorldStage.City,
+                "island" => WorldStage.Island,
+                _ => null
+            };
         }
 
         public static uint StableHash(string value)
