@@ -3,6 +3,7 @@ using NUnit.Framework;
 using SignalHunt.Core;
 using SignalHunt.Gameplay;
 using SignalHunt.Replay;
+using SignalHunt.UI;
 using SignalHunt.World;
 using UnityEngine;
 
@@ -168,6 +169,31 @@ namespace SignalHunt.Tests
             Assert.That(secondOutcome.improvementMs, Is.EqualTo(11000));
             Assert.That(history, Has.Length.EqualTo(2));
             Assert.That(history[0].clientRunId, Is.EqualTo(second.clientRunId));
+        }
+
+        [Test]
+        public void StartMenuUsesHonestChallengeSpecificContent()
+        {
+            var challenge = DailyChallenge.ForUtcDate(new DateTime(2026, 8, 16, 0, 0, 0, DateTimeKind.Utc));
+            challenge.appKey = DailyGameCatalog.WaypointWingsAppKey;
+            challenge.stageDisplayName = "Sunrise Archipelago";
+            challenge.collectibleCount = 14;
+
+            var content = DailyStartMenuContent.For(challenge);
+
+            Assert.That(content.title, Is.EqualTo("WAYPOINT WINGS"));
+            Assert.That(content.itemSummary, Is.EqualTo("14 AIR GATES"));
+            Assert.That(content.primaryAction, Is.EqualTo("TAKE FLIGHT"));
+            Assert.That(content.socialHook, Does.Contain("shared flight film"));
+        }
+
+        [Test]
+        public void StartMenuFormatsOnlyRealPersonalBestData()
+        {
+            Assert.That(DailyStartMenu.FormatBest(null), Is.EqualTo("NO BEST YET"));
+            Assert.That(DailyStartMenu.FormatBest(ReplayWithResult(false, 45000, 9000)), Is.EqualTo("BEST 9/10"));
+            Assert.That(DailyStartMenu.FormatBest(ReplayWithResult(true, 101234, 18000)),
+                Is.EqualTo("BEST 01:41.234"));
         }
 
         private static ReplayRun ReplayWithResult(bool completed, int timeMs, int score)

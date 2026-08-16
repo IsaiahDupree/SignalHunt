@@ -21,6 +21,8 @@ Controls:
 
 The run begins after a three-second countdown. Collect all ten signals; the result panel saves the attempt, shows the improvement against your daily best, syncs the live board when Supabase is configured, and offers `RACE AGAIN`, `WATCH / SHARE`, and `DAILY FILM`.
 
+Before the countdown, every app now opens through the same programmatic startup experience with app-specific art direction. An animated seed loader introduces the shared daily world, followed by a home menu over a live cinematic flyover of that exact generated map. The menu explains today's objective and controls, shows the exact stage/seed/reset time, displays only the player's real local attempts and personal best, offers player color selection and how-to-play, and unlocks Daily Film preview after the first saved run. The moving backdrop is rendered from the daily world in real time, so it needs no bundled video and cannot drift from the playable seed.
+
 ## Play Waypoint Wings
 
 Open `Assets/WaypointWings/Scenes/Main.unity` and press Play. Fly the aircraft through all 14 gates in order using the on-screen `LEFT`, `RIGHT`, `DOWN`, `UP`, and `BOOST` controls or the keyboard. The UTC date alternates between the bright Sunrise Archipelago and Neon Skyway stages.
@@ -163,6 +165,8 @@ Build the separate Treasure Hunter preview:
 ```
 
 Use `--treasure-stage ruins` or `--treasure-stage crystals` to inspect either deterministic exploration stage. Automated visual checks can also pin a seed date with `--treasure-date YYYY-MM-DD`.
+
+Programmatic startup visuals can be captured from standalone builds with `--treasure-capture-loading PATH` and `--treasure-capture-menu PATH`. The equivalent prefixes are `--signalhunt`, `--rally`, and `--wings` for the other app shells.
 
 The UTC daily challenge alternates stages automatically. To inspect a specific stage in a development build, add either `--signalhunt-stage city` or `--signalhunt-stage island` to the player command line.
 

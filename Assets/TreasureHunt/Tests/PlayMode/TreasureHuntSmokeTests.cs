@@ -1,10 +1,12 @@
 using System.Collections;
 using NUnit.Framework;
 using SignalHunt.Replay;
+using SignalHunt.UI;
 using TreasureHunt.Gameplay;
 using TreasureHunt.World;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace TreasureHunt.PlayModeTests
 {
@@ -17,8 +19,7 @@ namespace TreasureHunt.PlayModeTests
             {
                 new GameObject("Treasure Hunter Test").AddComponent<TreasureHuntGame>();
             }
-            yield return null;
-            yield return null;
+            yield return new WaitUntil(() => GameObject.Find("START CHALLENGE") != null);
 
             var game = Object.FindAnyObjectByType<TreasureHuntGame>();
             var explorer = Object.FindAnyObjectByType<ExplorerController>();
@@ -32,7 +33,12 @@ namespace TreasureHunt.PlayModeTests
             Assert.That(artifacts, Has.Length.EqualTo(12));
             Assert.That(Camera.main, Is.Not.Null);
             var attemptsBefore = ReplayStore.GetAttemptCount(session.Challenge.challengeId);
-            yield return new WaitForSeconds(3.2f);
+            Assert.That(GameObject.Find("Daily Start Menu"), Is.Not.Null);
+            Assert.That(GameObject.Find("HOW TO PLAY"), Is.Not.Null);
+            Assert.That(Object.FindAnyObjectByType<DailyMenuCameraMotion>(), Is.Not.Null);
+            GameObject.Find("START CHALLENGE").GetComponent<Button>().onClick.Invoke();
+            yield return new WaitForSeconds(3.6f);
+            Assert.That(Object.FindAnyObjectByType<DailyMenuCameraMotion>(), Is.Null);
             for (var index = 0; index < session.Challenge.collectibleCount; index++)
             {
                 Assert.That(session.FindArtifact($"test-artifact-{index + 1:D2}"), Is.True);

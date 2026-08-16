@@ -24,7 +24,7 @@ namespace WaypointRally
         private ReplayRun _latestRun;
         private DailyMontageExporter _filmExporter;
 
-        private void Start()
+        private IEnumerator Start()
         {
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 0;
@@ -35,6 +35,14 @@ namespace WaypointRally
             Screen.orientation = ScreenOrientation.Portrait;
 
             var challenge = RallyDailyChallenge.Today();
+            var startMenu = gameObject.AddComponent<DailyStartMenu>();
+            startMenu.Initialize(challenge);
+            if (startMenu.CaptureIfRequested("--rally-capture-loading"))
+            {
+                yield break;
+            }
+            yield return null;
+            startMenu.SetLoadingProgress(0.24f, "READING TODAY'S ROAD SEED");
             ConfigureRendering(challenge);
             _palette = new GamePalette();
             _palette.ApplyVehicleColor(PlayerCosmetics.VehicleColorIndex);
@@ -42,6 +50,8 @@ namespace WaypointRally
             _session = gameObject.AddComponent<RallySession>();
             RallyWorldBuilder.Build(layout, challenge, _palette,
                 (index, id) => _session.PassCheckpoint(index, id));
+            startMenu.SetLoadingProgress(0.66f, "BUILDING ROADS AND SHORTCUTS");
+            yield return new WaitForSecondsRealtime(0.16f);
 
             var vehicle = RallyCarFactory.CreatePlayer(_palette, layout.playerSpawn, layout.playerHeading);
             var nameplate = WorldNameplate.Create(vehicle.transform, PlayerIdentity.DisplayName);
@@ -49,6 +59,8 @@ namespace WaypointRally
             _session.Completed += _ => nameplate.gameObject.SetActive(false);
 
             var camera = BuildCamera(vehicle, challenge);
+            var menuCamera = camera.gameObject.AddComponent<DailyMenuCameraMotion>();
+            menuCamera.Initialize(camera, vehicle.transform, challenge);
             _hud = gameObject.AddComponent<RallyHud>();
             _hud.Initialize(_session, challenge);
             _hud.Track(vehicle);
@@ -68,6 +80,7 @@ namespace WaypointRally
             {
                 var ghost = RallyCarFactory.CreateReplayVisual(_palette, personalBest, 0, true);
                 ghost.name = "Personal Best Rally Ghost";
+                menuCamera.HideActor(ghost);
                 ghost.AddComponent<RallyGhostPlayback>().Initialize(personalBest, _session);
             }
 
@@ -81,6 +94,10 @@ namespace WaypointRally
                 }
                 var ghost = RallyCarFactory.CreateReplayVisual(_palette, topGhost, 1, true);
                 ghost.name = "Daily Leader Rally Ghost";
+                if (menuCamera != null)
+                {
+                    menuCamera.HideActor(ghost);
+                }
                 ghost.AddComponent<RallyGhostPlayback>().Initialize(topGhost, _session);
             }));
 
@@ -88,7 +105,16 @@ namespace WaypointRally
             _filmExporter.Initialize(camera, vehicle.transform, _palette,
                 (run, index) => RallyCarFactory.CreateReplayVisual(_palette, run, index, false));
             _filmExporter.StatusChanged += _hud.SetNetworkStatus;
-            _filmExporter.PresentationModeChanged += _hud.SetPresentationMode;
+            var gameStarted = false;
+            _filmExporter.PresentationModeChanged += active => _hud.SetPresentationMode(active || !gameStarted);
+            _filmExporter.PresentationModeChanged += active =>
+            {
+                startMenu.SetPresentationMode(active);
+                if (!active && !gameStarted)
+                {
+                    menuCamera.ResumeAfterReplay();
+                }
+            };
             _hud.WatchRequested += () =>
             {
                 var run = _latestRun ?? ReplayStore.LoadLatest(challenge.challengeId);
@@ -96,8 +122,49 @@ namespace WaypointRally
             };
             _hud.FilmRequested += () => StartCoroutine(ExportDailyFilm());
 
-            _session.Begin();
-            StartCoroutine(CaptureIfRequested(_session, _filmExporter));
+            _hud.SetPresentationMode(true);
+            startMenu.StyleRequested += () =>
+            {
+                _palette.ApplyVehicleColor(PlayerCosmetics.CycleVehicleColor());
+                startMenu.NotifyStyleChanged(PlayerCosmetics.VehicleColorIndex);
+            };
+            startMenu.FilmRequested += () =>
+            {
+                menuCamera.PauseForReplay();
+                StartCoroutine(ExportDailyFilm());
+            };
+            startMenu.PlayRequested += () =>
+            {
+                gameStarted = true;
+                menuCamera.Finish();
+                _hud.SetPresentationMode(false);
+                _session.Begin();
+                StartCoroutine(CaptureIfRequested(_session, _filmExporter));
+            };
+            startMenu.SetLoadingProgress(0.92f, "POSITIONING DAILY GHOSTS");
+            yield return new WaitForSecondsRealtime(0.28f);
+            startMenu.SetLoadingProgress(1f, "TODAY'S RALLY IS READY");
+            yield return new WaitForSecondsRealtime(0.18f);
+            startMenu.ShowMenu();
+            var menuCapture = startMenu.CaptureIfRequested("--rally-capture-menu");
+            if (!menuCapture && HasCaptureRequest("--rally-capture", "--rally-capture-result",
+                    "--rally-capture-film"))
+            {
+                startMenu.BeginForAutomation();
+            }
+        }
+
+        private static bool HasCaptureRequest(params string[] markers)
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            foreach (var marker in markers)
+            {
+                if (Array.IndexOf(arguments, marker) >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void OnRecordingCompleted(ReplayRun run)

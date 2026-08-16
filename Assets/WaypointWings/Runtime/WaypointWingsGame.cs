@@ -24,7 +24,7 @@ namespace WaypointWings
         private ReplayRun _latestRun;
         private DailyMontageExporter _filmExporter;
 
-        private void Start()
+        private IEnumerator Start()
         {
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 0;
@@ -35,12 +35,22 @@ namespace WaypointWings
             Screen.orientation = ScreenOrientation.Portrait;
 
             var challenge = WingsDailyChallenge.Today();
+            var startMenu = gameObject.AddComponent<DailyStartMenu>();
+            startMenu.Initialize(challenge);
+            if (startMenu.CaptureIfRequested("--wings-capture-loading"))
+            {
+                yield break;
+            }
+            yield return null;
+            startMenu.SetLoadingProgress(0.24f, "READING TODAY'S SKY SEED");
             ConfigureRendering(challenge);
             _palette = new GamePalette();
             _palette.ApplyVehicleColor(PlayerCosmetics.VehicleColorIndex);
             var layout = FlightCourseGenerator.Generate(challenge);
             _session = gameObject.AddComponent<FlightSession>();
             FlightWorldBuilder.Build(layout, _palette, (index, id) => _session.PassGate(index, id));
+            startMenu.SetLoadingProgress(0.66f, "RAISING ISLANDS AND AIR GATES");
+            yield return new WaitForSecondsRealtime(0.16f);
 
             var aircraft = AircraftFactory.CreatePlayer(_palette, layout.playerSpawn, layout.playerRotation);
             var nameplate = WorldNameplate.Create(aircraft.transform, PlayerIdentity.DisplayName);
@@ -48,6 +58,8 @@ namespace WaypointWings
             _session.Completed += _ => nameplate.gameObject.SetActive(false);
 
             var camera = BuildCamera(aircraft, challenge);
+            var menuCamera = camera.gameObject.AddComponent<DailyMenuCameraMotion>();
+            menuCamera.Initialize(camera, aircraft.transform, challenge);
             _hud = gameObject.AddComponent<WingsHud>();
             _hud.Initialize(_session, challenge);
             _hud.Track(aircraft);
@@ -67,6 +79,7 @@ namespace WaypointWings
             {
                 var ghost = AircraftFactory.CreateReplayVisual(_palette, personalBest, 0, true);
                 ghost.name = "Personal Best Flight Ghost";
+                menuCamera.HideActor(ghost);
                 ghost.AddComponent<FlightGhostPlayback>().Initialize(personalBest, _session);
             }
 
@@ -80,6 +93,10 @@ namespace WaypointWings
                 }
                 var ghost = AircraftFactory.CreateReplayVisual(_palette, topGhost, 1, true);
                 ghost.name = "Daily Leader Flight Ghost";
+                if (menuCamera != null)
+                {
+                    menuCamera.HideActor(ghost);
+                }
                 ghost.AddComponent<FlightGhostPlayback>().Initialize(topGhost, _session);
             }));
 
@@ -87,7 +104,16 @@ namespace WaypointWings
             _filmExporter.Initialize(camera, aircraft.transform, _palette,
                 (run, index) => AircraftFactory.CreateReplayVisual(_palette, run, index, false));
             _filmExporter.StatusChanged += _hud.SetNetworkStatus;
-            _filmExporter.PresentationModeChanged += _hud.SetPresentationMode;
+            var gameStarted = false;
+            _filmExporter.PresentationModeChanged += active => _hud.SetPresentationMode(active || !gameStarted);
+            _filmExporter.PresentationModeChanged += active =>
+            {
+                startMenu.SetPresentationMode(active);
+                if (!active && !gameStarted)
+                {
+                    menuCamera.ResumeAfterReplay();
+                }
+            };
             _hud.WatchRequested += () =>
             {
                 var run = _latestRun ?? ReplayStore.LoadLatest(challenge.challengeId);
@@ -95,8 +121,49 @@ namespace WaypointWings
             };
             _hud.FilmRequested += () => StartCoroutine(ExportDailyFilm());
 
-            _session.Begin();
-            StartCoroutine(CaptureIfRequested(_session, _filmExporter));
+            _hud.SetPresentationMode(true);
+            startMenu.StyleRequested += () =>
+            {
+                _palette.ApplyVehicleColor(PlayerCosmetics.CycleVehicleColor());
+                startMenu.NotifyStyleChanged(PlayerCosmetics.VehicleColorIndex);
+            };
+            startMenu.FilmRequested += () =>
+            {
+                menuCamera.PauseForReplay();
+                StartCoroutine(ExportDailyFilm());
+            };
+            startMenu.PlayRequested += () =>
+            {
+                gameStarted = true;
+                menuCamera.Finish();
+                _hud.SetPresentationMode(false);
+                _session.Begin();
+                StartCoroutine(CaptureIfRequested(_session, _filmExporter));
+            };
+            startMenu.SetLoadingProgress(0.92f, "CALCULATING FLIGHT LINES");
+            yield return new WaitForSecondsRealtime(0.28f);
+            startMenu.SetLoadingProgress(1f, "TODAY'S SKYWAY IS READY");
+            yield return new WaitForSecondsRealtime(0.18f);
+            startMenu.ShowMenu();
+            var menuCapture = startMenu.CaptureIfRequested("--wings-capture-menu");
+            if (!menuCapture && HasCaptureRequest("--wings-capture", "--wings-capture-result",
+                    "--wings-capture-film"))
+            {
+                startMenu.BeginForAutomation();
+            }
+        }
+
+        private static bool HasCaptureRequest(params string[] markers)
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            foreach (var marker in markers)
+            {
+                if (Array.IndexOf(arguments, marker) >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void OnRecordingCompleted(ReplayRun run)

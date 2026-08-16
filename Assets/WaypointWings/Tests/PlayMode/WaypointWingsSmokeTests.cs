@@ -1,8 +1,10 @@
 using System.Collections;
 using NUnit.Framework;
 using SignalHunt.Replay;
+using SignalHunt.UI;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 using WaypointWings.Gameplay;
 using WaypointWings.World;
 
@@ -17,8 +19,7 @@ namespace WaypointWings.PlayModeTests
             {
                 new GameObject("Waypoint Wings Test").AddComponent<WaypointWingsGame>();
             }
-            yield return null;
-            yield return null;
+            yield return new WaitUntil(() => GameObject.Find("START CHALLENGE") != null);
 
             var game = Object.FindAnyObjectByType<WaypointWingsGame>();
             var aircraft = Object.FindAnyObjectByType<AircraftController>();
@@ -32,7 +33,12 @@ namespace WaypointWings.PlayModeTests
             Assert.That(gates, Has.Length.EqualTo(14));
             Assert.That(Camera.main, Is.Not.Null);
             var attemptsBefore = ReplayStore.GetAttemptCount(session.Challenge.challengeId);
-            yield return new WaitForSeconds(3.2f);
+            Assert.That(GameObject.Find("Daily Start Menu"), Is.Not.Null);
+            Assert.That(GameObject.Find("HOW TO PLAY"), Is.Not.Null);
+            Assert.That(Object.FindAnyObjectByType<DailyMenuCameraMotion>(), Is.Not.Null);
+            GameObject.Find("START CHALLENGE").GetComponent<Button>().onClick.Invoke();
+            yield return new WaitForSeconds(3.6f);
+            Assert.That(Object.FindAnyObjectByType<DailyMenuCameraMotion>(), Is.Null);
             for (var index = 0; index < session.Challenge.collectibleCount; index++)
             {
                 Assert.That(session.PassGate(index, $"test-gate-{index + 1:D2}"), Is.True);

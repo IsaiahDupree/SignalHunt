@@ -24,7 +24,7 @@ namespace TreasureHunt
         private ReplayRun _latestRun;
         private DailyMontageExporter _filmExporter;
 
-        private void Start()
+        private IEnumerator Start()
         {
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 0;
@@ -35,12 +35,22 @@ namespace TreasureHunt
             Screen.orientation = ScreenOrientation.Portrait;
 
             var challenge = TreasureDailyChallenge.Today();
+            var startMenu = gameObject.AddComponent<DailyStartMenu>();
+            startMenu.Initialize(challenge);
+            if (startMenu.CaptureIfRequested("--treasure-capture-loading"))
+            {
+                yield break;
+            }
+            yield return null;
+            startMenu.SetLoadingProgress(0.24f, "READING THE DAILY RELIC MAP");
             ConfigureRendering(challenge);
             _palette = new GamePalette();
             _palette.ApplyVehicleColor(PlayerCosmetics.VehicleColorIndex);
             var layout = TreasureWorldGenerator.Generate(challenge);
             _session = gameObject.AddComponent<TreasureSession>();
             TreasureWorldBuilder.Build(layout, challenge, _palette, id => _session.FindArtifact(id));
+            startMenu.SetLoadingProgress(0.66f, "HIDING ARTIFACTS AND CLUES");
+            yield return new WaitForSecondsRealtime(0.16f);
 
             var explorer = ExplorerFactory.CreatePlayer(_palette, layout.playerSpawn, layout.playerHeading);
             var nameplate = WorldNameplate.Create(explorer.transform, PlayerIdentity.DisplayName);
@@ -51,6 +61,8 @@ namespace TreasureHunt
             explorer.ScanPulsed += origin => TreasureArtifact.ScanAll(origin, 34f);
 
             var camera = BuildCamera(explorer, challenge);
+            var menuCamera = camera.gameObject.AddComponent<DailyMenuCameraMotion>();
+            menuCamera.Initialize(camera, explorer.transform, challenge);
             _hud = gameObject.AddComponent<TreasureHud>();
             _hud.Initialize(_session, challenge);
             _hud.Track(explorer);
@@ -70,6 +82,7 @@ namespace TreasureHunt
             {
                 var ghost = ExplorerFactory.CreateReplayVisual(_palette, personalBest, 0, true);
                 ghost.name = "Personal Best Search Ghost";
+                menuCamera.HideActor(ghost);
                 ghost.AddComponent<TreasureGhostPlayback>().Initialize(personalBest, _session);
             }
 
@@ -83,6 +96,10 @@ namespace TreasureHunt
                 }
                 var ghost = ExplorerFactory.CreateReplayVisual(_palette, topGhost, 1, true);
                 ghost.name = "Daily Leader Search Ghost";
+                if (menuCamera != null)
+                {
+                    menuCamera.HideActor(ghost);
+                }
                 ghost.AddComponent<TreasureGhostPlayback>().Initialize(topGhost, _session);
             }));
 
@@ -90,7 +107,16 @@ namespace TreasureHunt
             _filmExporter.Initialize(camera, explorer.transform, _palette,
                 (run, index) => ExplorerFactory.CreateReplayVisual(_palette, run, index, false));
             _filmExporter.StatusChanged += _hud.SetNetworkStatus;
-            _filmExporter.PresentationModeChanged += _hud.SetPresentationMode;
+            var gameStarted = false;
+            _filmExporter.PresentationModeChanged += active => _hud.SetPresentationMode(active || !gameStarted);
+            _filmExporter.PresentationModeChanged += active =>
+            {
+                startMenu.SetPresentationMode(active);
+                if (!active && !gameStarted)
+                {
+                    menuCamera.ResumeAfterReplay();
+                }
+            };
             _hud.WatchRequested += () =>
             {
                 var run = _latestRun ?? ReplayStore.LoadLatest(challenge.challengeId);
@@ -98,8 +124,49 @@ namespace TreasureHunt
             };
             _hud.FilmRequested += () => StartCoroutine(ExportDailyFilm());
 
-            _session.Begin();
-            StartCoroutine(CaptureIfRequested(_session, explorer, _filmExporter));
+            _hud.SetPresentationMode(true);
+            startMenu.StyleRequested += () =>
+            {
+                _palette.ApplyVehicleColor(PlayerCosmetics.CycleVehicleColor());
+                startMenu.NotifyStyleChanged(PlayerCosmetics.VehicleColorIndex);
+            };
+            startMenu.FilmRequested += () =>
+            {
+                menuCamera.PauseForReplay();
+                StartCoroutine(ExportDailyFilm());
+            };
+            startMenu.PlayRequested += () =>
+            {
+                gameStarted = true;
+                menuCamera.Finish();
+                _hud.SetPresentationMode(false);
+                _session.Begin();
+                StartCoroutine(CaptureIfRequested(_session, explorer, _filmExporter));
+            };
+            startMenu.SetLoadingProgress(0.92f, "CALIBRATING THE DETECTOR");
+            yield return new WaitForSecondsRealtime(0.28f);
+            startMenu.SetLoadingProgress(1f, "TODAY'S HUNT IS READY");
+            yield return new WaitForSecondsRealtime(0.18f);
+            startMenu.ShowMenu();
+            var menuCapture = startMenu.CaptureIfRequested("--treasure-capture-menu");
+            if (!menuCapture && HasCaptureRequest("--treasure-capture", "--treasure-capture-result",
+                    "--treasure-capture-film"))
+            {
+                startMenu.BeginForAutomation();
+            }
+        }
+
+        private static bool HasCaptureRequest(params string[] markers)
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            foreach (var marker in markers)
+            {
+                if (Array.IndexOf(arguments, marker) >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void OnRecordingCompleted(ReplayRun run)
