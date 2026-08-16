@@ -1,0 +1,8 @@
+{
+  "name": "SignalHunt.Runtime",
+  "rootNamespace": "SignalHunt",
+  "references": [
+    "UnityEngine.UI"
+  ],
+  "autoReferenced": true
+}

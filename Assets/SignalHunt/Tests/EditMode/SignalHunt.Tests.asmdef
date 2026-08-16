@@ -1,0 +1,13 @@
+{
+  "name": "SignalHunt.Tests",
+  "rootNamespace": "SignalHunt.Tests",
+  "references": [
+    "SignalHunt.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "SignalHunt.Editor",
+  "rootNamespace": "SignalHunt.Editor",
+  "references": [
+    "SignalHunt.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}

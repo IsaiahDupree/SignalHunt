@@ -1,0 +1,10 @@
+{
+  "name": "SignalHunt.PlayModeTests",
+  "rootNamespace": "SignalHunt.PlayModeTests",
+  "references": [
+    "SignalHunt.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}
