@@ -1,0 +1,9 @@
+{
+  "name": "WaypointRally.Runtime",
+  "rootNamespace": "WaypointRally",
+  "references": [
+    "SignalHunt.Runtime",
+    "UnityEngine.UI"
+  ],
+  "autoReferenced": true
+}

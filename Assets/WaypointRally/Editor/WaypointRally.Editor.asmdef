@@ -1,0 +1,12 @@
+{
+  "name": "WaypointRally.Editor",
+  "rootNamespace": "WaypointRally.Editor",
+  "references": [
+    "SignalHunt.Runtime",
+    "WaypointRally.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}
