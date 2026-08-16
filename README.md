@@ -185,7 +185,7 @@ To export, sign, install, and launch one app on a paired iPhone over Wi-Fi, supp
 ./scripts/build-ios-wireless.sh treasure-hunter "$IOS_DEVICE_ID" "$IOS_DEVELOPMENT_TEAM"
 ```
 
-Use `signal-hunt`, `waypoint-wings`, or `waypoint-rally` for a single app, or `all` to deploy the complete suite. The phone must be paired, reachable on the local network, and have Developer Mode enabled. The script uses an existing Apple Development certificate and device provisioning profile; it never accepts or stores an Apple password or API key.
+Use `signal-hunt`, `waypoint-wings`, or `waypoint-rally` for a single app, or `all` to deploy the complete suite. The phone must be paired, reachable on the local network, and have Developer Mode enabled. The script uses Xcode automatic signing and permits Xcode to refresh the development profile for the supplied team after a restart; it never accepts or stores an Apple password or API key.
 
 ## Daily seed contract
 

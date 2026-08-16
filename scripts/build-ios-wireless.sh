@@ -67,9 +67,9 @@ xcodebuild -quiet \
   -configuration Debug \
   -destination "platform=iOS,id=$xcode_device_id" \
   -derivedDataPath "$derived_dir" \
+  -allowProvisioningUpdates \
   DEVELOPMENT_TEAM="$development_team" \
   CODE_SIGN_STYLE=Automatic \
-  "CODE_SIGN_IDENTITY=Apple Development" \
   build
 
 app_path=$(find "$derived_dir/Build/Products/Debug-iphoneos" -maxdepth 1 -type d -name '*.app' -print -quit)
