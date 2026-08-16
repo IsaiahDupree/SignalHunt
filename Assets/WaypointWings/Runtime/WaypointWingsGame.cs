@@ -279,10 +279,7 @@ namespace WaypointWings
             {
                 yield break;
             }
-            yield return new WaitForSeconds(3.2f);
-            FlightInputState.Set(FlightControl.Boost, true);
-            yield return new WaitForSeconds(0.3f);
-            FlightInputState.Clear();
+            yield return new WaitForSeconds(3.05f);
             yield return new WaitForSeconds(0.1f);
             ScreenCapture.CaptureScreenshot(arguments[gameplay + 1], 1);
             yield return new WaitForSeconds(1f);

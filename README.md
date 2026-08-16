@@ -2,13 +2,13 @@
 
 This repository contains two compact daily challenge games for iOS. Every player receives the same procedurally generated stage for the current UTC date, can retry it without limit, and records reconstructable runs for ghosts, leaderboards, and social replays.
 
-The apps share the daily-seed, identity, cosmetics, backend, leaderboard, replay, and Daily Film engine while shipping as separate Unity scenes and products:
+The app network shares the daily-seed, identity, cosmetics, backend, leaderboard, replay, and Daily Film engine while shipping as separate Unity scenes and products:
 
-- **Signal Hunt** — find hidden relics in a rotating daily world.
-- **Waypoint Rally** — route-optimize through ground checkpoints.
-- **Waypoint Wings** — fly through a vertical daily course.
+- **Signal Hunt** — playable; find hidden relics in a rotating daily world.
+- **Waypoint Wings** — playable; fly through a vertical daily course.
+- **Waypoint Rally** — shared data contract reserved for the planned ground-racing shell.
 
-## Play the MVP
+## Play Signal Hunt
 
 Open this directory in Unity `6000.5.2f1`, open `Assets/SignalHunt/Scenes/Main.unity`, and press Play.
 
