@@ -1,0 +1,9 @@
+{
+  "name": "WaypointWings.Runtime",
+  "rootNamespace": "WaypointWings",
+  "references": [
+    "SignalHunt.Runtime",
+    "UnityEngine.UI"
+  ],
+  "autoReferenced": true
+}

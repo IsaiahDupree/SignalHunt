@@ -1,0 +1,14 @@
+{
+  "name": "WaypointWings.Tests",
+  "rootNamespace": "WaypointWings.Tests",
+  "references": [
+    "SignalHunt.Runtime",
+    "WaypointWings.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

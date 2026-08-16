@@ -14,6 +14,7 @@ namespace SignalHunt.Replay
         private bool _playing;
 
         public event Action<string> StatusChanged;
+        public event Action<bool> PresentationModeChanged;
 
         public void Initialize(FollowCamera followCamera, Transform gameplayTarget, GamePalette palette)
         {
@@ -36,6 +37,7 @@ namespace SignalHunt.Replay
         {
             _playing = true;
             StatusChanged?.Invoke(NativeReplayKit.IsAvailable ? "Preparing vertical ReplayKit export…" : "Previewing replay — export requires an iOS device build");
+            PresentationModeChanged?.Invoke(true);
             Screen.orientation = ScreenOrientation.Portrait;
             NativeReplayKit.Start();
             yield return new WaitForSeconds(0.8f);
@@ -45,9 +47,16 @@ namespace SignalHunt.Replay
             var startTime = Time.time;
             var lastTimestamp = run.frames[^1].timestamp;
             var frameIndex = 0;
+            var activeShot = -1;
             while (Time.time - startTime <= lastTimestamp)
             {
                 var elapsed = Time.time - startTime;
+                var shotIndex = Mathf.FloorToInt(elapsed / 3.5f) % 4;
+                if (shotIndex != activeShot)
+                {
+                    activeShot = shotIndex;
+                    _camera.SetTarget(replayVehicle.transform, true, (ReplayCameraShot)shotIndex);
+                }
                 while (frameIndex < run.frames.Count - 2 && run.frames[frameIndex + 1].timestamp <= elapsed)
                 {
                     frameIndex++;
@@ -65,6 +74,7 @@ namespace SignalHunt.Replay
             _camera.SetTarget(_gameplayTarget);
             Destroy(replayVehicle);
             StatusChanged?.Invoke(NativeReplayKit.IsAvailable ? "Replay ready to save or share" : "Replay preview complete");
+            PresentationModeChanged?.Invoke(false);
             _playing = false;
         }
     }

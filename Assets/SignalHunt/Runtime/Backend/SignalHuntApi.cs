@@ -16,6 +16,7 @@ namespace SignalHunt.Backend
         public int timeMs;
         public int score;
         public int collectedCount;
+        public int attemptCount;
     }
 
     [Serializable]
@@ -28,9 +29,11 @@ namespace SignalHunt.Backend
     [Serializable]
     internal sealed class EnsureChallengeRequest
     {
+        public string p_app_key;
         public string p_challenge_id;
         public string p_date_key;
         public int p_generation_seed;
+        public string p_generation_version;
         public string p_world_template;
         public DailyChallenge p_config;
     }
@@ -38,7 +41,9 @@ namespace SignalHunt.Backend
     [Serializable]
     internal sealed class SubmitRunRequest
     {
+        public string p_app_key;
         public string p_challenge_id;
+        public string p_client_run_id;
         public string p_player_name;
         public string p_install_id;
         public int p_time_ms;
@@ -51,6 +56,7 @@ namespace SignalHunt.Backend
     [Serializable]
     internal sealed class LeaderboardRequest
     {
+        public string p_app_key;
         public string p_challenge_id;
         public int p_limit;
     }
@@ -63,6 +69,7 @@ namespace SignalHunt.Backend
         public int time_ms;
         public int score;
         public int collected_count;
+        public int attempt_count;
     }
 
     [Serializable]
@@ -72,16 +79,21 @@ namespace SignalHunt.Backend
     }
 
     [Serializable]
-    internal sealed class TopGhostWireEntry
+    internal sealed class MontageWireEntry
     {
+        public int rank;
+        public string run_id;
         public string player_name;
         public ReplayRun replay_data;
+        public int time_ms;
+        public int score;
+        public int attempt_count;
     }
 
     [Serializable]
-    internal sealed class TopGhostWireWrapper
+    internal sealed class MontageWireWrapper
     {
-        public TopGhostWireEntry[] items;
+        public MontageWireEntry[] items;
     }
 
     public sealed class SignalHuntApi : MonoBehaviour
@@ -117,17 +129,27 @@ namespace SignalHunt.Backend
 
             var ensurePayload = new EnsureChallengeRequest
             {
+                p_app_key = challenge.appKey,
                 p_challenge_id = challenge.challengeId,
                 p_date_key = challenge.dateKey,
                 p_generation_seed = unchecked((int)challenge.generationSeed),
+                p_generation_version = challenge.generationVersion,
                 p_world_template = challenge.worldTemplate,
                 p_config = challenge
             };
-            yield return PostRpc("signal_hunt_ensure_challenge", JsonUtility.ToJson(ensurePayload), null);
+            string ensureError = null;
+            yield return PostRpc("daily_challenge_ensure", JsonUtility.ToJson(ensurePayload), error => ensureError = error);
+            if (!string.IsNullOrEmpty(ensureError))
+            {
+                completed?.Invoke(new LeaderboardResult { error = ensureError });
+                yield break;
+            }
 
             var submitPayload = new SubmitRunRequest
             {
+                p_app_key = challenge.appKey,
                 p_challenge_id = challenge.challengeId,
+                p_client_run_id = run.clientRunId,
                 p_player_name = PlayerIdentity.DisplayName,
                 p_install_id = PlayerIdentity.InstallId,
                 p_time_ms = run.result.timeMs,
@@ -137,7 +159,7 @@ namespace SignalHunt.Backend
                 p_replay_data = run
             };
             string submitError = null;
-            yield return PostRpc("signal_hunt_submit_run", JsonUtility.ToJson(submitPayload), error => submitError = error);
+            yield return PostRpc("daily_challenge_submit_run", JsonUtility.ToJson(submitPayload), error => submitError = error);
             if (!string.IsNullOrEmpty(submitError))
             {
                 completed?.Invoke(new LeaderboardResult { error = submitError });
@@ -146,8 +168,13 @@ namespace SignalHunt.Backend
 
             string leaderboardJson = null;
             string leaderboardError = null;
-            yield return PostRpc("signal_hunt_leaderboard",
-                JsonUtility.ToJson(new LeaderboardRequest { p_challenge_id = challenge.challengeId, p_limit = 10 }),
+            yield return PostRpc("daily_challenge_leaderboard",
+                JsonUtility.ToJson(new LeaderboardRequest
+                {
+                    p_app_key = challenge.appKey,
+                    p_challenge_id = challenge.challengeId,
+                    p_limit = 10
+                }),
                 error => leaderboardError = error,
                 body => leaderboardJson = body);
             if (!string.IsNullOrEmpty(leaderboardError))
@@ -174,47 +201,66 @@ namespace SignalHunt.Backend
                 yield break;
             }
 
-            var ensurePayload = new EnsureChallengeRequest
+            ReplayRun[] runs = null;
+            string montageError = null;
+            yield return FetchDailyMontage(challenge, 1, (result, error) =>
             {
-                p_challenge_id = challenge.challengeId,
-                p_date_key = challenge.dateKey,
-                p_generation_seed = unchecked((int)challenge.generationSeed),
-                p_world_template = challenge.worldTemplate,
-                p_config = challenge
-            };
-            string ensureError = null;
-            yield return PostRpc("signal_hunt_ensure_challenge", JsonUtility.ToJson(ensurePayload), error => ensureError = error);
-            if (!string.IsNullOrEmpty(ensureError))
+                runs = result;
+                montageError = error;
+            });
+            completed?.Invoke(runs != null && runs.Length > 0 ? runs[0] : null, montageError);
+        }
+
+        public IEnumerator FetchDailyMontage(DailyChallenge challenge, int limit, Action<ReplayRun[], string> completed)
+        {
+            if (!IsConfigured)
             {
-                completed?.Invoke(null, ensureError);
+                completed?.Invoke(Array.Empty<ReplayRun>(), "Backend not configured; using attempts saved on this device");
+                yield break;
+            }
+
+            yield return _session.EnsureAuthenticated();
+            if (!string.IsNullOrEmpty(_session.Error))
+            {
+                completed?.Invoke(Array.Empty<ReplayRun>(), _session.Error);
                 yield break;
             }
 
             string body = null;
-            string ghostError = null;
-            yield return PostRpc("signal_hunt_top_ghost",
-                JsonUtility.ToJson(new LeaderboardRequest { p_challenge_id = challenge.challengeId, p_limit = 1 }),
-                error => ghostError = error,
+            string errorMessage = null;
+            yield return PostRpc("daily_challenge_montage",
+                JsonUtility.ToJson(new LeaderboardRequest
+                {
+                    p_app_key = challenge.appKey,
+                    p_challenge_id = challenge.challengeId,
+                    p_limit = Mathf.Clamp(limit, 1, 32)
+                }),
+                error => errorMessage = error,
                 response => body = response);
-            if (!string.IsNullOrEmpty(ghostError))
+            if (!string.IsNullOrEmpty(errorMessage))
             {
-                completed?.Invoke(null, ghostError);
+                completed?.Invoke(Array.Empty<ReplayRun>(), errorMessage);
                 yield break;
             }
 
             try
             {
-                var wrapper = JsonUtility.FromJson<TopGhostWireWrapper>($"{{\"items\":{body}}}");
-                var entry = wrapper?.items != null && wrapper.items.Length > 0 ? wrapper.items[0] : null;
-                if (entry?.replay_data != null)
+                var wrapper = JsonUtility.FromJson<MontageWireWrapper>($"{{\"items\":{body}}}");
+                var wire = wrapper?.items ?? Array.Empty<MontageWireEntry>();
+                var runs = new ReplayRun[wire.Length];
+                for (var index = 0; index < wire.Length; index++)
                 {
-                    entry.replay_data.playerName = entry.player_name;
+                    runs[index] = wire[index].replay_data;
+                    if (runs[index] != null)
+                    {
+                        runs[index].playerName = wire[index].player_name;
+                    }
                 }
-                completed?.Invoke(entry?.replay_data, null);
+                completed?.Invoke(runs, null);
             }
             catch (Exception exception)
             {
-                completed?.Invoke(null, $"Top ghost could not be read: {exception.Message}");
+                completed?.Invoke(Array.Empty<ReplayRun>(), $"Daily film could not be read: {exception.Message}");
             }
         }
 
@@ -253,7 +299,8 @@ namespace SignalHunt.Backend
                         playerName = wire[index].player_name,
                         timeMs = wire[index].time_ms,
                         score = wire[index].score,
-                        collectedCount = wire[index].collected_count
+                        collectedCount = wire[index].collected_count,
+                        attemptCount = wire[index].attempt_count
                     };
                 }
 

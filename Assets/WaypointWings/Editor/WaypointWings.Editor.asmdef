@@ -1,0 +1,12 @@
+{
+  "name": "WaypointWings.Editor",
+  "rootNamespace": "WaypointWings.Editor",
+  "references": [
+    "SignalHunt.Runtime",
+    "WaypointWings.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}

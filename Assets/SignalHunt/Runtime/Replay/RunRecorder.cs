@@ -1,4 +1,5 @@
 using System;
+using SignalHunt.Core;
 using SignalHunt.Gameplay;
 using UnityEngine;
 
@@ -23,9 +24,16 @@ namespace SignalHunt.Replay
             _vehicle = vehicle;
             _run = new ReplayRun
             {
+                appKey = session.Challenge.appKey,
+                modeKey = session.Challenge.modeKey,
                 challengeId = session.Challenge.challengeId,
+                worldTemplate = session.Challenge.worldTemplate,
+                generationSeed = session.Challenge.generationSeed,
+                clientRunId = Guid.NewGuid().ToString("N"),
+                recordedAtUtc = DateTime.UtcNow.ToString("O"),
                 playerId = playerId,
-                playerName = playerName
+                playerName = playerName,
+                vehicleColorIndex = PlayerCosmetics.VehicleColorIndex
             };
             session.RelicCollected += OnRelicCollected;
             session.Completed += OnCompleted;

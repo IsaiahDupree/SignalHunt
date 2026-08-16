@@ -20,11 +20,12 @@ namespace SignalHunt.Gameplay
             return controller;
         }
 
-        public static GameObject CreateReplayVisual(GamePalette palette, string name, bool ghost)
+        public static GameObject CreateReplayVisual(GamePalette palette, string name, bool ghost, int colorIndex = -1)
         {
             var root = new GameObject(name);
-            var body = ghost ? palette.Ghost : palette.HoverBody;
-            BuildVisual(root.transform, body, ghost ? palette.Ghost : palette.HoverGlass, body, palette.VehicleTrail, !ghost);
+            var body = ghost ? palette.Ghost : colorIndex >= 0 ? palette.CreateReplayVehicleMaterial(colorIndex) : palette.HoverBody;
+            var accent = ghost ? palette.Ghost : colorIndex >= 0 ? palette.NeonMaterials[(colorIndex + 1) % 4] : body;
+            BuildVisual(root.transform, body, ghost ? palette.Ghost : palette.HoverGlass, accent, palette.VehicleTrail, !ghost);
             if (!ghost)
             {
                 foreach (var trail in root.GetComponentsInChildren<TrailRenderer>())
