@@ -26,3 +26,4 @@ Recordings/
 *.unitypackage
 Assets/Resources/SignalHuntRuntimeConfig.asset
 Assets/Resources/SignalHuntRuntimeConfig.asset.meta
+artifacts/supabase-backups/

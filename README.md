@@ -64,6 +64,24 @@ The UTC date alternates between the bright, overgrown Sunken Ruins and the noctu
 
 Apply the ordered migrations in `supabase/migrations/` to the shared Supabase project, then enable anonymous sign-ins in Supabase Auth. The checked-in client never uses the service-role key.
 
+Before a paid-project migration, verify the entire stack against a real local Supabase instance:
+
+```bash
+supabase start
+supabase db reset --local
+./scripts/test-supabase-local.sh
+```
+
+Then run the production preflight with a fresh personal access token and database password injected only through your terminal environment. The preflight pins the expected project ref, verifies token scope, lints the existing remote schema, saves a schema-only backup under ignored `artifacts/`, and runs `db push --dry-run`. It never applies a migration.
+
+```bash
+export SUPABASE_ACCESS_TOKEN="..."
+export SUPABASE_DB_PASSWORD="..."
+./scripts/preflight-supabase-production.sh
+```
+
+Do not paste either secret into chat or commit it. Review the preflight output and backup before running any real `supabase db push --linked` operation.
+
 For Editor network play, export:
 
 ```bash
