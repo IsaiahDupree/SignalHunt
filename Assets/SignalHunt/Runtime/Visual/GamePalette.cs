@@ -99,6 +99,21 @@ namespace SignalHunt.Visual
 
         public void ApplyVehicleColor(int colorIndex)
         {
+            var color = VehicleColor(colorIndex);
+            HoverBody.color = color;
+            if (HoverBody.HasProperty("_EmissionColor"))
+            {
+                HoverBody.SetColor("_EmissionColor", color * 1.8f);
+            }
+        }
+
+        public Material CreateReplayVehicleMaterial(int colorIndex)
+        {
+            return Create($"Replay Vehicle {Mathf.Abs(colorIndex) % 4}", VehicleColor(colorIndex), true, 0.72f, 0.38f);
+        }
+
+        private static Color VehicleColor(int colorIndex)
+        {
             var colors = new[]
             {
                 new Color(0.08f, 0.70f, 0.95f),
@@ -106,12 +121,7 @@ namespace SignalHunt.Visual
                 new Color(0.52f, 1f, 0.20f),
                 new Color(1f, 0.70f, 0.12f)
             };
-            var color = colors[Mathf.Abs(colorIndex) % colors.Length];
-            HoverBody.color = color;
-            if (HoverBody.HasProperty("_EmissionColor"))
-            {
-                HoverBody.SetColor("_EmissionColor", color * 1.8f);
-            }
+            return colors[Mathf.Abs(colorIndex) % colors.Length];
         }
 
         private Material Create(string name, Color color, bool emission = false, float smoothness = 0.55f, float metallic = 0.08f)

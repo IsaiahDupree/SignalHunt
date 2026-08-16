@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using SignalHunt.Backend;
 using SignalHunt.Core;
 using SignalHunt.Gameplay;
@@ -19,6 +20,7 @@ namespace SignalHunt
         private SignalHuntApi _api;
         private ReplayRun _latestRun;
         private CinematicReplayExporter _exporter;
+        private DailyMontageExporter _montageExporter;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureBootstrap()
@@ -66,8 +68,9 @@ namespace SignalHunt
             }
 
             var vehicle = HoverVehicleFactory.CreatePlayer(_palette, playerSpawn, playerHeading);
-            WorldNameplate.Create(vehicle.transform, PlayerIdentity.DisplayName);
+            var playerNameplate = WorldNameplate.Create(vehicle.transform, PlayerIdentity.DisplayName);
             _session.Initialize(challenge, vehicle, relicCount);
+            _session.Completed += _ => playerNameplate.gameObject.SetActive(false);
 
             var followCamera = BuildCamera(vehicle.transform, challenge);
             _hud = gameObject.AddComponent<HuntHud>();
@@ -106,31 +109,107 @@ namespace SignalHunt
             _exporter = gameObject.AddComponent<CinematicReplayExporter>();
             _exporter.Initialize(followCamera, vehicle.transform, _palette);
             _exporter.StatusChanged += _hud.SetNetworkStatus;
+            _exporter.PresentationModeChanged += _hud.SetPresentationMode;
             _hud.ExportRequested += () => _exporter.Export(_latestRun ?? ReplayStore.LoadLatest(challenge.challengeId));
+            _montageExporter = gameObject.AddComponent<DailyMontageExporter>();
+            _montageExporter.Initialize(followCamera, vehicle.transform, _palette);
+            _montageExporter.StatusChanged += _hud.SetNetworkStatus;
+            _montageExporter.PresentationModeChanged += _hud.SetPresentationMode;
+            _hud.MontageRequested += () => StartCoroutine(ExportDailyFilm());
 
             _session.Begin();
-            StartCoroutine(CapturePreviewIfRequested());
+            StartCoroutine(CapturePreviewIfRequested(_session, _montageExporter));
         }
 
         private void OnRecordingCompleted(ReplayRun run)
         {
             _latestRun = run;
-            var personalBest = ReplayStore.SaveIfBest(run);
-            _hud.SetNetworkStatus(personalBest ? "New personal best · syncing daily rank…" : "Run saved · syncing daily rank…");
+            var outcome = ReplayStore.SaveAttempt(run);
+            _hud.SetRunOutcome(outcome, run.result);
+            _hud.SetNetworkStatus(outcome.isPersonalBest
+                ? $"Attempt {outcome.attemptNumber} is your new best · syncing daily rank…"
+                : $"Attempt {outcome.attemptNumber} saved · syncing daily rank…");
             StartCoroutine(_api.SubmitAndFetchLeaderboard(_session.Challenge, run, leaderboard =>
             {
                 if (!string.IsNullOrEmpty(leaderboard.error))
                 {
                     _hud.SetNetworkStatus(leaderboard.error);
+                    _hud.SetLeaderboardUnavailable();
                     return;
                 }
 
+                _hud.SetLeaderboard(leaderboard.entries);
                 var rank = Array.Find(leaderboard.entries,
                     entry => string.Equals(entry.playerName, PlayerIdentity.DisplayName, StringComparison.Ordinal));
                 _hud.SetNetworkStatus(rank == null
                     ? $"Daily leaderboard synced · {leaderboard.entries.Length} ranked hunters"
                     : $"Daily rank #{rank.rank} · {leaderboard.entries.Length} ranked hunters");
             }));
+        }
+
+        private IEnumerator ExportDailyFilm()
+        {
+            var challenge = _session.Challenge;
+            var localRuns = ReplayStore.LoadHistory(challenge.challengeId, 16);
+            if (!_api.IsConfigured)
+            {
+                _hud.SetNetworkStatus($"Building film from {localRuns.Length} attempt{(localRuns.Length == 1 ? string.Empty : "s")} on this device");
+                _montageExporter.Export(localRuns);
+                yield break;
+            }
+
+            _hud.SetNetworkStatus("Loading today's racers…");
+            ReplayRun[] remoteRuns = null;
+            string error = null;
+            yield return _api.FetchDailyMontage(challenge, 16, (runs, message) =>
+            {
+                remoteRuns = runs;
+                error = message;
+            });
+
+            var merged = MergeRuns(remoteRuns, localRuns, 16);
+            if (!string.IsNullOrEmpty(error))
+            {
+                _hud.SetNetworkStatus($"{error} · using {merged.Length} local attempt{(merged.Length == 1 ? string.Empty : "s")}");
+            }
+            else
+            {
+                _hud.SetNetworkStatus($"Loaded {merged.Length} racer{(merged.Length == 1 ? string.Empty : "s")} for today's film");
+            }
+            _montageExporter.Export(merged);
+        }
+
+        private static ReplayRun[] MergeRuns(IReadOnlyList<ReplayRun> primary, IReadOnlyList<ReplayRun> secondary, int limit)
+        {
+            var merged = new List<ReplayRun>();
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            AddRuns(primary, merged, ids, limit);
+            AddRuns(secondary, merged, ids, limit);
+            return merged.ToArray();
+        }
+
+        private static void AddRuns(IReadOnlyList<ReplayRun> source, ICollection<ReplayRun> destination,
+            ISet<string> ids, int limit)
+        {
+            if (source == null)
+            {
+                return;
+            }
+            for (var index = 0; index < source.Count && destination.Count < limit; index++)
+            {
+                var run = source[index];
+                if (run?.frames == null || run.frames.Count < 2)
+                {
+                    continue;
+                }
+                var id = string.IsNullOrWhiteSpace(run.clientRunId)
+                    ? $"legacy-{DailyChallenge.StableHash(run.playerId + run.challengeId + run.result?.timeMs)}"
+                    : run.clientRunId;
+                if (ids.Add(id))
+                {
+                    destination.Add(run);
+                }
+            }
         }
 
         private static FollowCamera BuildCamera(Transform target, DailyChallenge challenge)
@@ -185,9 +264,44 @@ namespace SignalHunt
             _palette?.Dispose();
         }
 
-        private static IEnumerator CapturePreviewIfRequested()
+        private static IEnumerator CapturePreviewIfRequested(HuntSession session, DailyMontageExporter montageExporter)
         {
             var arguments = Environment.GetCommandLineArgs();
+            var filmMarker = Array.IndexOf(arguments, "--signalhunt-capture-film");
+            if (filmMarker >= 0 && filmMarker + 1 < arguments.Length)
+            {
+                yield return new WaitForSeconds(3.25f);
+                VehicleInputState.Set(VehicleControl.Accelerate, true);
+                VehicleInputState.Set(VehicleControl.SteerLeft, true);
+                yield return new WaitForSeconds(1.4f);
+                VehicleInputState.Set(VehicleControl.SteerLeft, false);
+                VehicleInputState.Set(VehicleControl.SteerRight, true);
+                yield return new WaitForSeconds(1.6f);
+                VehicleInputState.Set(VehicleControl.SteerRight, false);
+                yield return new WaitForSeconds(1.5f);
+                VehicleInputState.Clear();
+                CompleteForCapture(session);
+                yield return new WaitForSeconds(0.45f);
+                montageExporter.Export(ReplayStore.LoadHistory(session.Challenge.challengeId, 16));
+                yield return new WaitForSeconds(7.5f);
+                ScreenCapture.CaptureScreenshot(arguments[filmMarker + 1], 1);
+                yield return new WaitForSeconds(1f);
+                Application.Quit(0);
+                yield break;
+            }
+
+            var resultMarker = Array.IndexOf(arguments, "--signalhunt-capture-result");
+            if (resultMarker >= 0 && resultMarker + 1 < arguments.Length)
+            {
+                yield return new WaitForSeconds(3.25f);
+                CompleteForCapture(session);
+                yield return new WaitForSeconds(0.8f);
+                ScreenCapture.CaptureScreenshot(arguments[resultMarker + 1], 1);
+                yield return new WaitForSeconds(1f);
+                Application.Quit(0);
+                yield break;
+            }
+
             var marker = Array.IndexOf(arguments, "--signalhunt-capture");
             if (marker < 0 || marker + 1 >= arguments.Length)
             {
@@ -202,6 +316,14 @@ namespace SignalHunt
             ScreenCapture.CaptureScreenshot(arguments[marker + 1], 1);
             yield return new WaitForSeconds(1f);
             Application.Quit(0);
+        }
+
+        private static void CompleteForCapture(HuntSession session)
+        {
+            for (var index = 1; index <= session.Challenge.collectibleCount; index++)
+            {
+                session.Collect($"relic-{index:D2}");
+            }
         }
     }
 }

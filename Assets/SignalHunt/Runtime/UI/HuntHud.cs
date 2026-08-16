@@ -1,6 +1,9 @@
 using System;
+using System.Text;
+using SignalHunt.Backend;
 using SignalHunt.Core;
 using SignalHunt.Gameplay;
+using SignalHunt.Replay;
 using SignalHunt.World;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -12,6 +15,7 @@ namespace SignalHunt.UI
     public sealed class HuntHud : MonoBehaviour
     {
         private static readonly Color PanelColor = new(0.018f, 0.03f, 0.075f, 0.88f);
+        private static readonly Color ResultPanelColor = new(0.012f, 0.024f, 0.058f, 0.97f);
         private static readonly Color Cyan = new(0.08f, 0.86f, 1f, 1f);
         private static readonly Color Magenta = new(1f, 0.12f, 0.67f, 1f);
         private static readonly Color MutedText = new(0.68f, 0.76f, 0.88f, 1f);
@@ -23,6 +27,8 @@ namespace SignalHunt.UI
         private Text _resultTitle;
         private Text _resultStats;
         private Text _networkStatus;
+        private Text _personalBestText;
+        private Text _leaderboardText;
         private Text _targetText;
         private RectTransform _progressFill;
         private GameObject _resultPanel;
@@ -31,8 +37,10 @@ namespace SignalHunt.UI
         private HoverVehicleController _vehicle;
         private RelicPickup[] _relics;
         private float _nextTargetUpdate;
+        private GameObject _canvasRoot;
 
         public event Action ExportRequested;
+        public event Action MontageRequested;
         public event Action StyleRequested;
 
         public void Initialize(HuntSession session, DailyChallenge challenge)
@@ -57,6 +65,84 @@ namespace SignalHunt.UI
             }
         }
 
+        public void SetPresentationMode(bool active)
+        {
+            if (_canvasRoot != null)
+            {
+                _canvasRoot.SetActive(!active);
+            }
+        }
+
+        public void SetRunOutcome(RunSaveOutcome outcome, HuntResult result)
+        {
+            if (outcome == null || result == null)
+            {
+                return;
+            }
+
+            if (outcome.isPersonalBest)
+            {
+                _resultTitle.text = result.completed ? "NEW PERSONAL BEST" : "BEST HUNT SO FAR";
+            }
+            else
+            {
+                _resultTitle.text = $"ATTEMPT {outcome.attemptNumber} COMPLETE";
+            }
+
+            if (result.completed && outcome.improvementMs > 0)
+            {
+                _personalBestText.text = $"-{FormatMilliseconds(outcome.improvementMs)} FASTER · ATTEMPT {outcome.attemptNumber}";
+            }
+            else if (result.completed && outcome.bestTimeMs >= 0)
+            {
+                _personalBestText.text = $"DAILY BEST {FormatMilliseconds(outcome.bestTimeMs)} · ATTEMPT {outcome.attemptNumber}";
+            }
+            else
+            {
+                _personalBestText.text = $"KEEP SEARCHING · ATTEMPT {outcome.attemptNumber}";
+            }
+        }
+
+        public void SetLeaderboard(LeaderboardEntry[] entries)
+        {
+            if (_leaderboardText == null)
+            {
+                return;
+            }
+            if (entries == null || entries.Length == 0)
+            {
+                _leaderboardText.text = "NO RANKED RUNS YET\nBE THE FIRST TO SET TODAY'S PATH";
+                return;
+            }
+
+            var builder = new StringBuilder();
+            var count = Mathf.Min(5, entries.Length);
+            for (var index = 0; index < count; index++)
+            {
+                var entry = entries[index];
+                var name = string.IsNullOrWhiteSpace(entry.playerName) ? "RACER" : entry.playerName.ToUpperInvariant();
+                if (name.Length > 12)
+                {
+                    name = name.Substring(0, 12);
+                }
+                builder.Append(entry.rank).Append("  ").Append(name).Append("  ")
+                    .Append(FormatMilliseconds(entry.timeMs)).Append("  ×").Append(Mathf.Max(1, entry.attemptCount));
+                if (index < count - 1)
+                {
+                    builder.AppendLine();
+                }
+            }
+            _leaderboardText.text = builder.ToString();
+        }
+
+        public void SetLeaderboardUnavailable()
+        {
+            if (_leaderboardText != null)
+            {
+                _leaderboardText.text = "ONLINE BOARD UNAVAILABLE\nTHIS ATTEMPT IS SAVED LOCALLY";
+            }
+        }
+
         public void TrackVehicle(HoverVehicleController vehicle)
         {
             _vehicle = vehicle;
@@ -66,6 +152,7 @@ namespace SignalHunt.UI
         private void BuildCanvas(DailyChallenge challenge)
         {
             var canvasObject = new GameObject("Signal Hunt HUD");
+            _canvasRoot = canvasObject;
             canvasObject.transform.SetParent(transform, false);
             var canvas = canvasObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -124,18 +211,26 @@ namespace SignalHunt.UI
 
         private void BuildResultPanel(Transform parent)
         {
-            var rect = Panel("Run Complete", parent, new Vector2(0.08f, 0.25f), new Vector2(0.92f, 0.76f), PanelColor);
+            var rect = Panel("Run Complete", parent, new Vector2(0.045f, 0.10f), new Vector2(0.955f, 0.82f), ResultPanelColor);
             _resultPanel = rect.gameObject;
-            _resultTitle = Text("SIGNAL LOCKED", rect, new Vector2(0.08f, 0.78f), new Vector2(0.92f, 0.94f),
+            _resultTitle = Text("SIGNAL LOCKED", rect, new Vector2(0.06f, 0.85f), new Vector2(0.94f, 0.96f),
                 44, FontStyle.Bold, Cyan, TextAnchor.MiddleCenter);
-            _resultStats = Text(string.Empty, rect, new Vector2(0.08f, 0.40f), new Vector2(0.92f, 0.76f),
+            _resultStats = Text(string.Empty, rect, new Vector2(0.08f, 0.71f), new Vector2(0.92f, 0.85f),
                 30, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
-            _networkStatus = Text(string.Empty, rect, new Vector2(0.08f, 0.28f), new Vector2(0.92f, 0.41f),
+            _personalBestText = Text("CALCULATING PERSONAL BEST…", rect, new Vector2(0.08f, 0.63f), new Vector2(0.92f, 0.71f),
+                22, FontStyle.Bold, Magenta, TextAnchor.MiddleCenter);
+            Text("TODAY'S RACERS", rect, new Vector2(0.08f, 0.56f), new Vector2(0.92f, 0.63f),
+                22, FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
+            _leaderboardText = Text("SYNCING DAILY RACERS…", rect, new Vector2(0.08f, 0.31f), new Vector2(0.92f, 0.56f),
+                21, FontStyle.Bold, Color.white, TextAnchor.UpperLeft);
+            _networkStatus = Text(string.Empty, rect, new Vector2(0.08f, 0.24f), new Vector2(0.92f, 0.31f),
                 18, FontStyle.Normal, new Color(0.68f, 0.75f, 0.85f), TextAnchor.MiddleCenter);
 
-            ActionButton("EXPORT REPLAY", rect, new Vector2(0.08f, 0.10f), new Vector2(0.58f, 0.27f), Cyan,
+            ActionButton("WATCH / SHARE", rect, new Vector2(0.06f, 0.12f), new Vector2(0.48f, 0.23f), Cyan,
                 () => ExportRequested?.Invoke());
-            ActionButton("RETRY", rect, new Vector2(0.62f, 0.10f), new Vector2(0.92f, 0.27f), Magenta,
+            ActionButton("DAILY FILM", rect, new Vector2(0.52f, 0.12f), new Vector2(0.94f, 0.23f), Cyan,
+                () => MontageRequested?.Invoke());
+            ActionButton("RACE AGAIN", rect, new Vector2(0.06f, 0.025f), new Vector2(0.94f, 0.105f), Magenta,
                 () => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex));
             _resultPanel.SetActive(false);
         }
@@ -167,7 +262,7 @@ namespace SignalHunt.UI
             _resultPanel.SetActive(true);
             _resultTitle.text = result.completed ? "SIGNAL LOCKED" : "RUN ENDED";
             _resultStats.text =
-                $"{result.collectedCount}/{result.totalCount} RELICS\n{FormatMilliseconds(result.timeMs)}\nSCORE {result.score:N0}";
+                $"{result.collectedCount}/{result.totalCount} RELICS · {result.score:N0} PTS\n{FormatMilliseconds(result.timeMs)}";
             if (_targetText != null)
             {
                 _targetText.text = result.completed ? "ALL SIGNALS SECURED" : "HUNT CLOSED";

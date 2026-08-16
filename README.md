@@ -18,7 +18,7 @@ Controls:
 - Keyboard: WASD or arrow keys.
 - `STYLE` cycles and persists the launch vehicle color.
 
-The run begins after a three-second countdown. Collect all ten signals; the result panel saves the run locally, syncs it when Supabase is configured, and exposes `EXPORT REPLAY`.
+The run begins after a three-second countdown. Collect all ten signals; the result panel saves the attempt, shows the improvement against your daily best, syncs the live board when Supabase is configured, and offers `RACE AGAIN`, `WATCH / SHARE`, and `DAILY FILM`.
 
 ## What is implemented
 
@@ -28,15 +28,19 @@ The run begins after a three-second countdown. Collect all ten signals; the resu
 - A generated neon town with roads, alleys, buildings, plazas, ramps, tunnel gates, lighting, and ten safe/separated relics.
 - Physics hover-car controller with touch and keyboard input.
 - Timer, completion rules, deterministic scoring, player nameplate, and vehicle color selection.
+- Unlimited retries on the same daily seed, with durable local attempt history, attempt numbering, personal-best deltas, and best-ghost playback.
+- A real post-round top-five board showing each player's best run and total attempts; offline state is labeled honestly.
 - 10 Hz replay snapshots with position, rotation, speed, vehicle state, collection markers, and camera events.
 - Local personal-best ghost playback and share-caption metadata.
-- Cinematic replay playback; iOS device builds use ReplayKit's native preview/save/share sheet.
+- Cinematic replay playback with orbit, chase, overhead, and wide camera cuts; iOS device builds use ReplayKit's native preview/save/share sheet.
+- A Daily Film director that reconstructs up to 16 real racers, time-compresses their routes, switches racers/angles every three seconds, and records a vertical social clip through ReplayKit.
+- Shared `appKey`/`modeKey` replay contracts and generic backend RPCs for Signal Hunt, Waypoint Rally, and Waypoint Wings.
 - Supabase anonymous authentication, token refresh, challenge claiming, validated run submission, top-ten leaderboard, top ghost, profiles, cosmetics, and inventory schema.
 - Portrait safe-area HUD and an automated standalone visual smoke-capture mode.
 
 ## Backend setup
 
-The migration is at `supabase/migrations/202608150001_signal_hunt_core.sql`. Apply it to the shared Supabase project, then enable anonymous sign-ins in Supabase Auth. The checked-in client never uses the service-role key.
+Apply the ordered migrations in `supabase/migrations/` to the shared Supabase project, then enable anonymous sign-ins in Supabase Auth. The checked-in client never uses the service-role key.
 
 For Editor network play, export:
 
@@ -135,3 +139,4 @@ supabase/migrations                  shared production backend schema
 ```
 
 See `docs/SHARED-ENGINE.md` for the three-app boundary and the next build slices.
+See `docs/DAILY-FILM.md` for the attempt, leaderboard, ghost, and social montage flow.

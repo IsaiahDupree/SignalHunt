@@ -17,6 +17,7 @@ The shared runtime owns challenge identity, deterministic random generation, pro
 ```text
 SignalHunt.Core
   DailyChallenge
+  DailyGameCatalog
   DeterministicRandom
 
 SignalHunt.World
@@ -29,6 +30,7 @@ SignalHunt.Replay
   RunRecorder
   GhostPlayback
   CinematicReplayExporter
+  DailyMontageExporter
 
 SignalHunt.Backend
   anonymous session
@@ -39,16 +41,16 @@ When the second app begins, move `Core`, the replay data envelope, backend auth,
 
 ## Backend contract
 
-The database already accepts `signal-hunt`, `waypoint-rally`, and `waypoint-wings` app keys. It stores:
+The database and replay envelope accept `signal-hunt`, `waypoint-rally`, and `waypoint-wings` app keys. Generic `daily_challenge_*` RPCs keep the app shells isolated while reusing authentication, persistence, ranking, and montage delivery. The backend stores:
 
 - one immutable config per app/day;
 - authenticated player profiles;
 - every validated attempt;
-- compact replay JSON for reconstruction and ghost delivery;
+- every raw attempt plus compact replay JSON for reconstruction, ghost delivery, and film assembly;
 - shared or app-specific cosmetic catalog entries;
 - player inventory.
 
-Leaderboard reads use one personal-best run per player. Raw tables remain protected by row-level security; authenticated clients only execute constrained RPC functions.
+Leaderboard reads use one personal-best run per player and expose that player's attempt count. Montage reads select one best replay per racer, up to a constrained limit. Raw tables remain protected by row-level security; authenticated clients only execute constrained RPC functions.
 
 Before network launch, add server-side replay verification. Re-run the deterministic layout from the stored generation version, validate snapshot speed/acceleration bounds and collectible intersection order, and only then mark a run leaderboard-eligible.
 

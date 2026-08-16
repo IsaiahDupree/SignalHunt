@@ -12,12 +12,15 @@ namespace SignalHunt.Core
     [Serializable]
     public sealed class DailyChallenge
     {
+        public string appKey = DailyGameCatalog.SignalHuntAppKey;
+        public string modeKey = "daily-hunt";
         public string challengeId;
         public string dateKey;
         public string season;
         public string theme;
         public string difficulty;
         public string worldTemplate;
+        public string generationVersion;
         public string stageKey;
         public string stageDisplayName;
         public int displaySeed;
@@ -35,6 +38,7 @@ namespace SignalHunt.Core
             var stageDisplayName = stage == WorldStage.Island ? "Emerald Isle" : "Neon District";
             var theme = stage == WorldStage.Island ? "coastal" : "neon";
             var template = stage == WorldStage.Island ? "synthetic-island-v1" : "synthetic-town-v1";
+            var generationVersion = stage == WorldStage.Island ? "island-generator-v1" : "town-generator-v1";
             var season = SeasonFor(date.Month);
             var dateKey = date.ToString("yyyy-MM-dd");
             var identity = $"{dateKey}|{season}|{theme}|{difficulty}|{template}";
@@ -49,6 +53,7 @@ namespace SignalHunt.Core
                 theme = theme,
                 difficulty = difficulty,
                 worldTemplate = template,
+                generationVersion = generationVersion,
                 stageKey = stageKey,
                 stageDisplayName = stageDisplayName,
                 displaySeed = displaySeed,
