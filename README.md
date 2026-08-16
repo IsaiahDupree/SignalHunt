@@ -1,12 +1,12 @@
 # Signal Hunt
 
-This repository contains two compact daily challenge games for iOS. Every player receives the same procedurally generated stage for the current UTC date, can retry it without limit, and records reconstructable runs for ghosts, leaderboards, and social replays.
+This repository contains three compact daily challenge games for iOS. Every player receives the same procedurally generated stage for the current UTC date, can retry it without limit, and records reconstructable runs for ghosts, leaderboards, and social replays.
 
 The app network shares the daily-seed, identity, cosmetics, backend, leaderboard, replay, and Daily Film engine while shipping as separate Unity scenes and products:
 
 - **Signal Hunt** — playable; find hidden relics in a rotating daily world.
 - **Waypoint Wings** — playable; fly through a vertical daily course.
-- **Waypoint Rally** — shared data contract reserved for the planned ground-racing shell.
+- **Waypoint Rally** — playable; choose the fastest route through ground checkpoints.
 
 ## Play Signal Hunt
 
@@ -26,6 +26,12 @@ Open `Assets/WaypointWings/Scenes/Main.unity` and press Play. Fly the aircraft t
 
 Waypoint Wings records each flight at 10 Hz, plays personal-best and daily-leader aircraft ghosts, saves unlimited same-day attempts, and provides `WATCH FLIGHT`, `DAILY FILM`, and `FLY AGAIN` after every round. Its Daily Film reconstructs up to 16 real aircraft runs through cinematic chase, overhead, orbit, and wide cameras.
 
+## Play Waypoint Rally
+
+Open `Assets/WaypointRally/Scenes/Main.unity` and press Play. Drive through all 10 checkpoints in order using `LEFT`, `RIGHT`, `BRAKE`, and `GO` or the keyboard. The UTC date alternates between Turbo Harbor, with grid roads and diagonal shortcuts, and Dustlands Run, with open off-road terrain, rocks, cacti, and ramps.
+
+Waypoint Rally saves unlimited attempts, reconstructs personal-best and daily-leader car ghosts, and provides `WATCH RACE`, `DAILY FILM`, and `RACE AGAIN` after every round. Players share the checkpoint order while remaining free to discover a faster line between checkpoints.
+
 ## What is implemented
 
 - Stable UTC daily challenge IDs and platform-independent xorshift generation.
@@ -41,6 +47,7 @@ Waypoint Wings records each flight at 10 Hz, plays personal-best and daily-leade
 - Cinematic replay playback with orbit, chase, overhead, and wide camera cuts; iOS device builds use ReplayKit's native preview/save/share sheet.
 - A Daily Film director that reconstructs up to 16 real racers, time-compresses their routes, switches racers/angles every three seconds, and records a vertical social clip through ReplayKit.
 - A separate Waypoint Wings app shell with two deterministic vertical stages, arcade aircraft controls, 14 ordered flight gates, aircraft ghosts, flight scoring, retry flow, and an aircraft-specific Daily Film.
+- A separate Waypoint Rally app shell with two deterministic ground stages, 10 ordered checkpoints, open route choice, a programmatic rally car, driver ghosts, scoring, retry flow, and a rally-specific Daily Film.
 - Shared `appKey`/`modeKey` replay contracts and generic backend RPCs for Signal Hunt, Waypoint Rally, and Waypoint Wings.
 - Supabase anonymous authentication, token refresh, challenge claiming, validated run submission, top-ten leaderboard, top ghost, profiles, cosmetics, and inventory schema.
 - Portrait safe-area HUD and an automated standalone visual smoke-capture mode.
@@ -109,6 +116,17 @@ Build the separate Waypoint Wings preview:
 
 Use `--wings-stage archipelago` or `--wings-stage skyway` to inspect either deterministic flight stage in a development build.
 
+Build the separate Waypoint Rally preview:
+
+```bash
+"$SIGNAL_HUNT_UNITY" -batchmode -nographics -noaudio -quit \
+  -projectPath "$PWD" \
+  -executeMethod WaypointRally.Editor.WaypointRallyProjectBuilder.BuildMacPreview \
+  -logFile Logs/mac-rally-build.log
+```
+
+Use `--rally-stage town` or `--rally-stage dustlands` to inspect either deterministic ground-racing stage.
+
 The UTC daily challenge alternates stages automatically. To inspect a specific stage in a development build, add either `--signalhunt-stage city` or `--signalhunt-stage island` to the player command line.
 
 Build the Xcode iOS project after installing Unity's iOS Build Support module:
@@ -156,6 +174,9 @@ Assets/SignalHunt/Tests              deterministic and play-mode smoke tests
 Assets/WaypointWings/Runtime         flight challenge, world, aircraft, replay, and UI
 Assets/WaypointWings/Editor          separate scene and macOS/iOS app builders
 Assets/WaypointWings/Tests           flight generator and full-loop smoke tests
+Assets/WaypointRally/Runtime         rally challenge, world, car, replay, and UI
+Assets/WaypointRally/Editor          separate scene and macOS/iOS app builders
+Assets/WaypointRally/Tests           rally generator and full-loop smoke tests
 supabase/migrations                  shared production backend schema
 ```
 

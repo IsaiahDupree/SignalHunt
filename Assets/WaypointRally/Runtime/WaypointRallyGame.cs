@@ -196,7 +196,7 @@ namespace WaypointRally
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = challenge.stageKey == "harbor-town"
                 ? new Color(0.35f, 0.72f, 0.91f)
-                : new Color(0.96f, 0.48f, 0.20f);
+                : new Color(0.20f, 0.045f, 0.17f);
             var follow = instance.AddComponent<FollowCamera>();
             follow.ConfigureGameplay(7.2f, 9.6f, 4.2f, 3.0f, 61f, 74f, 30f);
             follow.SetTarget(vehicle.transform);
@@ -282,9 +282,7 @@ namespace WaypointRally
             }
             yield return new WaitForSeconds(3.15f);
             VehicleInputState.Set(VehicleControl.Accelerate, true);
-            yield return new WaitForSeconds(0.8f);
-            VehicleInputState.Set(VehicleControl.SteerLeft, true);
-            yield return new WaitForSeconds(0.35f);
+            yield return new WaitForSeconds(0.38f);
             VehicleInputState.Clear();
             ScreenCapture.CaptureScreenshot(arguments[gameplay + 1], 1);
             yield return new WaitForSeconds(1f);
