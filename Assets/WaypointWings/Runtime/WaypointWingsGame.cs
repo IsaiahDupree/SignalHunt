@@ -47,7 +47,7 @@ namespace WaypointWings
             _session.Initialize(challenge, aircraft, layout.gates.Count);
             _session.Completed += _ => nameplate.gameObject.SetActive(false);
 
-            var camera = BuildCamera(aircraft);
+            var camera = BuildCamera(aircraft, challenge);
             _hud = gameObject.AddComponent<WingsHud>();
             _hud.Initialize(_session, challenge);
             _hud.Track(aircraft);
@@ -182,7 +182,7 @@ namespace WaypointWings
             }
         }
 
-        private static FollowCamera BuildCamera(AircraftController aircraft)
+        private static FollowCamera BuildCamera(AircraftController aircraft, DailyChallenge challenge)
         {
             var instance = new GameObject("Main Camera");
             instance.tag = "MainCamera";
@@ -191,7 +191,9 @@ namespace WaypointWings
             camera.nearClipPlane = 0.08f;
             camera.farClipPlane = 900f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.33f, 0.67f, 0.88f);
+            camera.backgroundColor = challenge.stageKey == "archipelago"
+                ? new Color(0.33f, 0.67f, 0.88f)
+                : new Color(0.025f, 0.04f, 0.13f);
             var follow = instance.AddComponent<FollowCamera>();
             follow.ConfigureGameplay(10.5f, 14f, 5.2f, 6.5f, 64f, 77f, 46f);
             follow.SetSpeedProvider(() => aircraft.Speed);
