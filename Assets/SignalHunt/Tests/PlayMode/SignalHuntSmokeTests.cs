@@ -23,7 +23,7 @@ namespace SignalHunt.PlayModeTests
             var game = Object.FindAnyObjectByType<SignalHuntGame>();
             var vehicle = Object.FindAnyObjectByType<HoverVehicleController>();
             var session = Object.FindAnyObjectByType<HuntSession>();
-            var relics = Object.FindObjectsByType<RelicPickup>(FindObjectsSortMode.None);
+            var relics = Object.FindObjectsByType<RelicPickup>();
 
             Assert.That(game, Is.Not.Null);
             Assert.That(vehicle, Is.Not.Null);

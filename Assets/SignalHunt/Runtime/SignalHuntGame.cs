@@ -32,6 +32,10 @@ namespace SignalHunt
         private void Start()
         {
             Application.targetFrameRate = 60;
+            QualitySettings.vSyncCount = 0;
+            QualitySettings.antiAliasing = 4;
+            QualitySettings.shadowDistance = 58f;
+            QualitySettings.shadowResolution = ShadowResolution.Medium;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Screen.orientation = ScreenOrientation.Portrait;
             ConfigureRendering();
@@ -50,6 +54,7 @@ namespace SignalHunt
             var followCamera = BuildCamera(vehicle.transform);
             _hud = gameObject.AddComponent<HuntHud>();
             _hud.Initialize(_session, challenge);
+            _hud.TrackVehicle(vehicle);
             _hud.StyleRequested += () =>
             {
                 _palette.ApplyVehicleColor(PlayerCosmetics.CycleVehicleColor());
@@ -115,11 +120,11 @@ namespace SignalHunt
             var cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
             var camera = cameraObject.AddComponent<Camera>();
-            camera.fieldOfView = 66f;
+            camera.fieldOfView = 62f;
             camera.nearClipPlane = 0.08f;
             camera.farClipPlane = 260f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.015f, 0.025f, 0.07f);
+            camera.backgroundColor = new Color(0.008f, 0.014f, 0.045f);
             var follow = cameraObject.AddComponent<FollowCamera>();
             follow.SetTarget(target);
             return follow;
@@ -129,20 +134,28 @@ namespace SignalHunt
         {
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = 0.006f;
-            RenderSettings.fogColor = new Color(0.025f, 0.045f, 0.11f);
+            RenderSettings.fogDensity = 0.0042f;
+            RenderSettings.fogColor = new Color(0.025f, 0.045f, 0.12f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.12f, 0.18f, 0.34f);
-            RenderSettings.ambientEquatorColor = new Color(0.05f, 0.07f, 0.13f);
-            RenderSettings.ambientGroundColor = new Color(0.015f, 0.02f, 0.04f);
+            RenderSettings.ambientSkyColor = new Color(0.18f, 0.25f, 0.46f);
+            RenderSettings.ambientEquatorColor = new Color(0.08f, 0.10f, 0.19f);
+            RenderSettings.ambientGroundColor = new Color(0.025f, 0.032f, 0.065f);
 
             var lightObject = new GameObject("Synthetic Moon");
             var light = lightObject.AddComponent<Light>();
             light.type = LightType.Directional;
             light.color = new Color(0.48f, 0.64f, 1f);
-            light.intensity = 1.15f;
+            light.intensity = 1.32f;
             light.shadows = LightShadows.Soft;
             lightObject.transform.rotation = Quaternion.Euler(48f, -32f, 0f);
+
+            var rimObject = new GameObject("Neon Rim Light");
+            var rim = rimObject.AddComponent<Light>();
+            rim.type = LightType.Directional;
+            rim.color = new Color(1f, 0.16f, 0.66f);
+            rim.intensity = 0.42f;
+            rim.shadows = LightShadows.None;
+            rimObject.transform.rotation = Quaternion.Euler(35f, 145f, 0f);
         }
 
         private void OnDestroy()

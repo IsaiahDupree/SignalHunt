@@ -9,26 +9,33 @@ namespace SignalHunt.Visual
 
         public Material Asphalt { get; }
         public Material Pavement { get; }
+        public Material Sidewalk { get; }
         public Material RoadMarking { get; }
+        public Material RoadEdge { get; }
         public Material DarkMetal { get; }
+        public Material WindowGlass { get; }
         public Material[] BuildingMaterials { get; }
         public Material[] NeonMaterials { get; }
         public Material HoverBody { get; }
         public Material HoverGlass { get; }
+        public Material VehicleTrail { get; }
         public Material Ghost { get; }
 
         public GamePalette()
         {
-            Asphalt = Create("Asphalt", new Color(0.035f, 0.045f, 0.07f));
-            Pavement = Create("Pavement", new Color(0.11f, 0.13f, 0.19f));
-            RoadMarking = Create("Road Marking", new Color(0.24f, 0.82f, 1f), true);
-            DarkMetal = Create("Dark Metal", new Color(0.025f, 0.03f, 0.055f));
+            Asphalt = Create("Asphalt", new Color(0.026f, 0.035f, 0.058f), false, 0.18f, 0.15f);
+            Pavement = Create("Pavement", new Color(0.12f, 0.15f, 0.22f), false, 0.35f, 0.22f);
+            Sidewalk = Create("Sidewalk", new Color(0.17f, 0.20f, 0.29f), false, 0.42f, 0.16f);
+            RoadMarking = Create("Road Marking", new Color(0.10f, 0.72f, 1f), true);
+            RoadEdge = Create("Road Edge", new Color(0.45f, 0.16f, 0.82f), true);
+            DarkMetal = Create("Dark Metal", new Color(0.018f, 0.025f, 0.05f), false, 0.5f, 0.5f);
+            WindowGlass = Create("Window Glass", new Color(0.025f, 0.08f, 0.14f), false, 0.86f, 0.35f);
             BuildingMaterials = new[]
             {
-                Create("Building Indigo", new Color(0.10f, 0.12f, 0.23f)),
-                Create("Building Blue", new Color(0.08f, 0.18f, 0.27f)),
-                Create("Building Violet", new Color(0.18f, 0.09f, 0.25f)),
-                Create("Building Slate", new Color(0.13f, 0.16f, 0.22f))
+                Create("Building Indigo", new Color(0.13f, 0.16f, 0.31f), false, 0.48f, 0.24f),
+                Create("Building Blue", new Color(0.08f, 0.22f, 0.34f), false, 0.48f, 0.24f),
+                Create("Building Violet", new Color(0.23f, 0.10f, 0.32f), false, 0.48f, 0.24f),
+                Create("Building Slate", new Color(0.17f, 0.20f, 0.29f), false, 0.48f, 0.24f)
             };
             NeonMaterials = new[]
             {
@@ -37,8 +44,9 @@ namespace SignalHunt.Visual
                 Create("Signal Lime", new Color(0.52f, 1f, 0.2f), true),
                 Create("Signal Gold", new Color(1f, 0.7f, 0.12f), true)
             };
-            HoverBody = Create("Hover Body", new Color(0.08f, 0.7f, 0.95f), true);
-            HoverGlass = Create("Hover Glass", new Color(0.03f, 0.09f, 0.16f));
+            HoverBody = Create("Hover Body", new Color(0.08f, 0.7f, 0.95f), true, 0.72f, 0.38f);
+            HoverGlass = Create("Hover Glass", new Color(0.015f, 0.07f, 0.12f), false, 0.94f, 0.28f);
+            VehicleTrail = CreateTransparent("Vehicle Trail", new Color(1f, 0.12f, 0.67f, 0.58f));
             Ghost = CreateTransparent("Ghost", new Color(0.12f, 0.95f, 1f, 0.28f));
         }
 
@@ -70,7 +78,7 @@ namespace SignalHunt.Visual
             }
         }
 
-        private Material Create(string name, Color color, bool emission = false)
+        private Material Create(string name, Color color, bool emission = false, float smoothness = 0.55f, float metallic = 0.08f)
         {
             var shader = Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null)
@@ -78,6 +86,14 @@ namespace SignalHunt.Visual
                 throw new System.InvalidOperationException("Signal Hunt requires an included lit runtime shader.");
             }
             var material = new Material(shader) { name = name, color = color };
+            if (material.HasProperty("_Glossiness"))
+            {
+                material.SetFloat("_Glossiness", smoothness);
+            }
+            if (material.HasProperty("_Metallic"))
+            {
+                material.SetFloat("_Metallic", metallic);
+            }
             if (emission && material.HasProperty("_EmissionColor"))
             {
                 material.EnableKeyword("_EMISSION");
