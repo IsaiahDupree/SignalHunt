@@ -61,6 +61,11 @@ mkdir -p Logs
   -executeMethod "$builder" \
   -logFile "Logs/${game_key}-ios-export.log"
 
+if ! grep -q 'ReplayKit.framework' "$xcode_dir/Unity-iPhone.xcodeproj/project.pbxproj"; then
+  echo "The iOS export is missing ReplayKit.framework for $game_key" >&2
+  exit 1
+fi
+
 xcodebuild -quiet \
   -project "$xcode_dir/Unity-iPhone.xcodeproj" \
   -scheme Unity-iPhone \
