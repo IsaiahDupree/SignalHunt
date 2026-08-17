@@ -41,6 +41,9 @@ namespace WaypointRally.PlayModeTests
             GameObject.Find("START CHALLENGE").GetComponent<Button>().onClick.Invoke();
             yield return new WaitForSeconds(3.6f);
             Assert.That(Object.FindAnyObjectByType<DailyMenuCameraMotion>(), Is.Null);
+            Assert.That(Object.FindAnyObjectByType<TouchControlPad>(), Is.Not.Null);
+            Assert.That(GameObject.Find("Steering Pad"), Is.Not.Null);
+            Assert.That(GameObject.Find("THRUST"), Is.Not.Null);
             for (var index = 0; index < session.Challenge.collectibleCount; index++)
             {
                 Assert.That(session.PassCheckpoint(index, $"test-checkpoint-{index + 1:D2}"), Is.True);

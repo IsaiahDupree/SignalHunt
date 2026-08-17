@@ -181,16 +181,15 @@ namespace WaypointRally.UI
             var controls = _controls.GetComponent<RectTransform>();
             controls.SetParent(safe, false);
             controls.anchorMin = Vector2.zero;
-            controls.anchorMax = new Vector2(1f, 0.255f);
+            controls.anchorMax = new Vector2(1f, 0.285f);
             controls.offsetMin = controls.offsetMax = Vector2.zero;
-            ControlButton("LEFT", controls, new Vector2(0.04f, 0.12f), new Vector2(0.22f, 0.68f),
-                VehicleControl.SteerLeft, Cyan);
-            ControlButton("RIGHT", controls, new Vector2(0.24f, 0.12f), new Vector2(0.42f, 0.68f),
-                VehicleControl.SteerRight, Cyan);
-            ControlButton("BRAKE", controls, new Vector2(0.58f, 0.12f), new Vector2(0.76f, 0.68f),
+            SteeringPad(controls, Cyan);
+            ControlButton("BRAKE", controls, new Vector2(0.54f, 0.16f), new Vector2(0.72f, 0.62f),
                 VehicleControl.Brake, Orange);
-            ControlButton("GO", controls, new Vector2(0.78f, 0.12f), new Vector2(0.96f, 0.80f),
+            ControlButton("THRUST", controls, new Vector2(0.75f, 0.10f), new Vector2(0.96f, 0.78f),
                 VehicleControl.Accelerate, Cyan);
+            Text("DRAG TO STEER  ·  HOLD TO DRIVE", controls, new Vector2(0.05f, 0.88f),
+                new Vector2(0.95f, 0.98f), 19, FontStyle.Bold, Muted, TextAnchor.MiddleCenter).raycastTarget = false;
             BuildResultPanel(safe);
         }
 
@@ -274,6 +273,25 @@ namespace WaypointRally.UI
         {
             var image = ButtonSurface(label, parent, min, max, color);
             image.gameObject.AddComponent<HoldControlButton>().Initialize(control, image, color);
+        }
+
+        private void SteeringPad(Transform parent, Color color)
+        {
+            var pad = Panel("Steering Pad", parent, new Vector2(0.04f, 0.10f), new Vector2(0.48f, 0.83f),
+                new Color(Navy.r, Navy.g, Navy.b, 0.78f));
+            var outline = pad.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(color.r, color.g, color.b, 0.72f);
+            outline.effectDistance = new Vector2(2f, -2f);
+            var guide = Panel("Steering Track", pad, new Vector2(0.12f, 0.48f), new Vector2(0.88f, 0.52f),
+                new Color(color.r, color.g, color.b, 0.28f));
+            guide.GetComponent<Image>().raycastTarget = false;
+            var thumb = Panel("Steering Thumb", pad, new Vector2(0.38f, 0.28f), new Vector2(0.62f, 0.72f),
+                new Color(color.r, color.g, color.b, 0.88f));
+            thumb.GetComponent<Image>().raycastTarget = false;
+            Text("STEER", pad, new Vector2(0.30f, 0.03f), new Vector2(0.70f, 0.22f), 20,
+                FontStyle.Bold, Color.white, TextAnchor.MiddleCenter).raycastTarget = false;
+            pad.gameObject.AddComponent<TouchControlPad>().Initialize(
+                pad, thumb, value => VehicleInputState.SetSteering(value.x), true);
         }
 
         private void ActionButton(string label, Transform parent, Vector2 min, Vector2 max, Color color,

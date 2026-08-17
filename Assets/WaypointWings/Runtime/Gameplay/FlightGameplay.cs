@@ -27,12 +27,17 @@ namespace WaypointWings.Gameplay
         private static bool _up;
         private static bool _down;
         private static bool _boost;
+        private static Vector2 _touchStick;
 
-        public static float Turn => Mathf.Clamp((Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) || _right ? 1f : 0f) -
-                                                (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) || _left ? 1f : 0f), -1f, 1f);
-        public static float Pitch => Mathf.Clamp((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || _up ? 1f : 0f) -
-                                                 (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) || _down ? 1f : 0f), -1f, 1f);
+        public static float Turn => DigitalOrAnalog(
+            (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) || _right ? 1f : 0f) -
+            (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) || _left ? 1f : 0f), _touchStick.x);
+        public static float Pitch => DigitalOrAnalog(
+            (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || _up ? 1f : 0f) -
+            (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) || _down ? 1f : 0f), _touchStick.y);
         public static bool Boosting => Input.GetKey(KeyCode.Space) || _boost;
+
+        public static void SetStick(Vector2 value) => _touchStick = Vector2.ClampMagnitude(value, 1f);
 
         public static void Set(FlightControl control, bool pressed)
         {
@@ -49,10 +54,14 @@ namespace WaypointWings.Gameplay
         public static void Clear()
         {
             _left = _right = _up = _down = _boost = false;
+            _touchStick = Vector2.zero;
         }
+
+        private static float DigitalOrAnalog(float digital, float analog) =>
+            Mathf.Abs(digital) > 0.01f ? Mathf.Clamp(digital, -1f, 1f) : Mathf.Clamp(analog, -1f, 1f);
     }
 
-    public sealed class FlightHoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
+    public sealed class FlightHoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         private FlightControl _control;
         private Image _image;
@@ -67,7 +76,6 @@ namespace WaypointWings.Gameplay
 
         public void OnPointerDown(PointerEventData eventData) => Set(true);
         public void OnPointerUp(PointerEventData eventData) => Set(false);
-        public void OnPointerExit(PointerEventData eventData) => Set(false);
         private void OnDisable() => Set(false);
 
         private void Set(bool pressed)
@@ -86,11 +94,18 @@ namespace WaypointWings.Gameplay
     {
         private const float CruiseSpeed = 25f;
         private const float BoostSpeed = 46f;
+        private const float TurnRate = 52f;
+        private const float PitchRate = 34f;
+        private const float AutoLevelRate = 9f;
+        private const float MinimumPitch = -27f;
+        private const float MaximumPitch = 34f;
         private Rigidbody _body;
         private Transform _visual;
         private Vector3 _spawnPosition;
         private Quaternion _spawnRotation;
         private float _speed = CruiseSpeed;
+        private float _smoothedTurn;
+        private float _smoothedPitch;
         private bool _inputEnabled;
 
         public float Speed => _speed;
@@ -132,6 +147,8 @@ namespace WaypointWings.Gameplay
                 _body = GetComponent<Rigidbody>();
             }
             _speed = CruiseSpeed;
+            _smoothedTurn = 0f;
+            _smoothedPitch = 0f;
             _body.position = _spawnPosition;
             _body.rotation = _spawnRotation;
             _body.linearVelocity = Vector3.zero;
@@ -157,23 +174,31 @@ namespace WaypointWings.Gameplay
                 return;
             }
 
-            var turn = FlightInputState.Turn;
-            var pitch = FlightInputState.Pitch;
+            _smoothedTurn = Mathf.MoveTowards(_smoothedTurn, FlightInputState.Turn, Time.fixedDeltaTime * 4.5f);
+            _smoothedPitch = Mathf.MoveTowards(_smoothedPitch, FlightInputState.Pitch, Time.fixedDeltaTime * 4.5f);
             var desiredSpeed = FlightInputState.Boosting ? BoostSpeed : CruiseSpeed;
             _speed = Mathf.MoveTowards(_speed, desiredSpeed, Time.fixedDeltaTime * 16f);
 
             var forward = _body.rotation * Vector3.forward;
-            forward = Quaternion.AngleAxis(turn * 48f * Time.fixedDeltaTime, Vector3.up) * forward;
-            forward = Quaternion.AngleAxis(-pitch * 34f * Time.fixedDeltaTime, _body.rotation * Vector3.right) * forward;
-            forward.y = Mathf.Clamp(forward.y, -0.62f, 0.62f);
-            forward.Normalize();
-            var targetRotation = Quaternion.LookRotation(forward, Vector3.up);
-            _body.MoveRotation(Quaternion.Slerp(_body.rotation, targetRotation, Time.fixedDeltaTime * 7f));
-            _body.linearVelocity = forward * _speed;
+            var yaw = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
+            var currentPitch = Mathf.Asin(Mathf.Clamp(forward.y, -1f, 1f)) * Mathf.Rad2Deg;
+            yaw += _smoothedTurn * TurnRate * Time.fixedDeltaTime;
+            var targetPitch = Mathf.Abs(_smoothedPitch) > 0.015f
+                ? currentPitch + _smoothedPitch * PitchRate * Time.fixedDeltaTime
+                : Mathf.MoveTowards(currentPitch, 0f, AutoLevelRate * Time.fixedDeltaTime);
+            targetPitch = Mathf.Clamp(targetPitch, MinimumPitch, MaximumPitch);
+            var yawRadians = yaw * Mathf.Deg2Rad;
+            var pitchRadians = targetPitch * Mathf.Deg2Rad;
+            var desiredForward = new Vector3(Mathf.Sin(yawRadians) * Mathf.Cos(pitchRadians),
+                Mathf.Sin(pitchRadians), Mathf.Cos(yawRadians) * Mathf.Cos(pitchRadians));
+            var response = 1f - Mathf.Exp(-8f * Time.fixedDeltaTime);
+            var controlledForward = Vector3.Slerp(forward, desiredForward, response).normalized;
+            _body.MoveRotation(Quaternion.LookRotation(controlledForward, Vector3.up));
+            _body.linearVelocity = controlledForward * _speed;
 
             if (_visual != null)
             {
-                var bank = Quaternion.Euler(pitch * -6f, 0f, turn * -34f);
+                var bank = Quaternion.Euler(_smoothedPitch * -5f, 0f, _smoothedTurn * -30f);
                 _visual.localRotation = Quaternion.Slerp(_visual.localRotation, bank, Time.fixedDeltaTime * 6f);
             }
 

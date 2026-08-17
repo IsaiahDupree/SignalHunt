@@ -29,6 +29,7 @@ namespace WaypointWings.UI
         private Text _gateText;
         private Text _statusText;
         private Text _targetText;
+        private Text _controlTelemetry;
         private Text _resultTitle;
         private Text _resultStats;
         private Text _personalBest;
@@ -181,13 +182,14 @@ namespace WaypointWings.UI
             var controlsRect = _controls.GetComponent<RectTransform>();
             controlsRect.SetParent(safe, false);
             controlsRect.anchorMin = Vector2.zero;
-            controlsRect.anchorMax = new Vector2(1f, 0.255f);
+            controlsRect.anchorMax = new Vector2(1f, 0.30f);
             controlsRect.offsetMin = controlsRect.offsetMax = Vector2.zero;
-            ControlButton("LEFT", controlsRect, new Vector2(0.03f, 0.12f), new Vector2(0.19f, 0.68f), FlightControl.TurnLeft, Cyan);
-            ControlButton("RIGHT", controlsRect, new Vector2(0.21f, 0.12f), new Vector2(0.37f, 0.68f), FlightControl.TurnRight, Cyan);
-            ControlButton("DOWN", controlsRect, new Vector2(0.43f, 0.12f), new Vector2(0.57f, 0.62f), FlightControl.PitchDown, Gold);
-            ControlButton("UP", controlsRect, new Vector2(0.59f, 0.12f), new Vector2(0.73f, 0.68f), FlightControl.PitchUp, Gold);
-            ControlButton("BOOST", controlsRect, new Vector2(0.77f, 0.12f), new Vector2(0.97f, 0.80f), FlightControl.Boost, Cyan);
+            FlightPad(controlsRect);
+            ControlButton("BOOST", controlsRect, new Vector2(0.70f, 0.11f), new Vector2(0.96f, 0.78f),
+                FlightControl.Boost, Cyan);
+            _controlTelemetry = Text("AUTO-LEVEL ON  ·  DRAG TO FLY", controlsRect, new Vector2(0.05f, 0.89f),
+                new Vector2(0.95f, 0.98f), 19, FontStyle.Bold, Muted, TextAnchor.MiddleCenter);
+            _controlTelemetry.raycastTarget = false;
             BuildResultPanel(safe);
         }
 
@@ -260,12 +262,45 @@ namespace WaypointWings.UI
             var horizontal = Mathf.Abs(local.x) < 8f ? "CENTER" : local.x > 0f ? "RIGHT" : "LEFT";
             var vertical = Mathf.Abs(local.y) < 5f ? string.Empty : local.y > 0f ? " · ABOVE" : " · BELOW";
             _targetText.text = $"GATE {_session.ClearedCount + 1} · {Mathf.RoundToInt(local.magnitude)}m · {horizontal}{vertical}";
+            if (_controlTelemetry != null)
+            {
+                _controlTelemetry.text =
+                    $"AUTO-LEVEL ON  ·  ALT {Mathf.RoundToInt(_aircraft.transform.position.y)}m  ·  {Mathf.RoundToInt(_aircraft.Speed)} m/s";
+            }
         }
 
         private void ControlButton(string label, Transform parent, Vector2 min, Vector2 max, FlightControl control, Color color)
         {
             var image = ButtonSurface(label, parent, min, max, color);
             image.gameObject.AddComponent<FlightHoldButton>().Initialize(control, image, color);
+        }
+
+        private void FlightPad(Transform parent)
+        {
+            var pad = Panel("Flight Stick", parent, new Vector2(0.04f, 0.08f), new Vector2(0.62f, 0.84f),
+                new Color(Navy.r, Navy.g, Navy.b, 0.80f));
+            var outline = pad.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(Cyan.r, Cyan.g, Cyan.b, 0.78f);
+            outline.effectDistance = new Vector2(2f, -2f);
+            var horizontal = Panel("Flight Horizontal Guide", pad, new Vector2(0.12f, 0.49f),
+                new Vector2(0.88f, 0.51f), new Color(Cyan.r, Cyan.g, Cyan.b, 0.26f));
+            horizontal.GetComponent<Image>().raycastTarget = false;
+            var vertical = Panel("Flight Vertical Guide", pad, new Vector2(0.49f, 0.12f),
+                new Vector2(0.51f, 0.88f), new Color(Gold.r, Gold.g, Gold.b, 0.26f));
+            vertical.GetComponent<Image>().raycastTarget = false;
+            var thumb = Panel("Flight Stick Thumb", pad, new Vector2(0.40f, 0.34f), new Vector2(0.60f, 0.66f),
+                new Color(Cyan.r, Cyan.g, Cyan.b, 0.90f));
+            thumb.GetComponent<Image>().raycastTarget = false;
+            Text("CLIMB", pad, new Vector2(0.37f, 0.83f), new Vector2(0.63f, 0.98f), 17,
+                FontStyle.Bold, Gold, TextAnchor.MiddleCenter).raycastTarget = false;
+            Text("DESCEND", pad, new Vector2(0.34f, 0.02f), new Vector2(0.66f, 0.17f), 17,
+                FontStyle.Bold, Gold, TextAnchor.MiddleCenter).raycastTarget = false;
+            Text("TURN", pad, new Vector2(0.03f, 0.40f), new Vector2(0.25f, 0.60f), 17,
+                FontStyle.Bold, Cyan, TextAnchor.MiddleCenter).raycastTarget = false;
+            Text("TURN", pad, new Vector2(0.75f, 0.40f), new Vector2(0.97f, 0.60f), 17,
+                FontStyle.Bold, Cyan, TextAnchor.MiddleCenter).raycastTarget = false;
+            pad.gameObject.AddComponent<TouchControlPad>().Initialize(
+                pad, thumb, FlightInputState.SetStick, false, 0.10f);
         }
 
         private void ActionButton(string label, Transform parent, Vector2 min, Vector2 max, Color color,

@@ -15,7 +15,7 @@ Open this directory in Unity `6000.5.2f1`, open `Assets/SignalHunt/Scenes/Main.u
 
 Controls:
 
-- Touch: `LEFT`, `RIGHT`, `BRAKE`, and `GO`.
+- Touch: drag the steering pad for proportional turns; hold `THRUST` or `BRAKE` with the other thumb.
 - Keyboard: WASD or arrow keys.
 - `STYLE` cycles and persists the launch vehicle color.
 
@@ -25,19 +25,19 @@ Before the countdown, every app now opens through the same programmatic startup 
 
 ## Play Waypoint Wings
 
-Open `Assets/WaypointWings/Scenes/Main.unity` and press Play. Fly the aircraft through all 14 gates in order using the on-screen `LEFT`, `RIGHT`, `DOWN`, `UP`, and `BOOST` controls or the keyboard. The UTC date alternates between the bright Sunrise Archipelago and Neon Skyway stages.
+Open `Assets/WaypointWings/Scenes/Main.unity` and press Play. Fly through all 14 gates in order with the two-axis flight stick: drag left/right to turn and up/down to climb or descend, then release to auto-level. Hold `BOOST` with the other thumb. Keyboard controls remain WASD/arrows plus Space. The UTC date alternates between the bright Sunrise Archipelago and Neon Skyway stages.
 
 Waypoint Wings records each flight at 10 Hz, plays personal-best and daily-leader aircraft ghosts, saves unlimited same-day attempts, and provides `WATCH FLIGHT`, `DAILY FILM`, and `FLY AGAIN` after every round. Its Daily Film reconstructs up to 16 real aircraft runs through cinematic chase, overhead, orbit, and wide cameras.
 
 ## Play Waypoint Rally
 
-Open `Assets/WaypointRally/Scenes/Main.unity` and press Play. Drive through all 10 checkpoints in order using `LEFT`, `RIGHT`, `BRAKE`, and `GO` or the keyboard. The UTC date alternates between Turbo Harbor, with grid roads and diagonal shortcuts, and Dustlands Run, with open off-road terrain, rocks, cacti, and ramps.
+Open `Assets/WaypointRally/Scenes/Main.unity` and press Play. Drive through all 10 checkpoints in order with proportional drag steering plus the large `THRUST` and `BRAKE` touch controls, or use the keyboard. The UTC date alternates between Turbo Harbor, with grid roads and diagonal shortcuts, and Dustlands Run, with open off-road terrain, rocks, cacti, and ramps.
 
 Waypoint Rally saves unlimited attempts, reconstructs personal-best and daily-leader car ghosts, and provides `WATCH RACE`, `DAILY FILM`, and `RACE AGAIN` after every round. Players share the checkpoint order while remaining free to discover a faster line between checkpoints.
 
 ## Play Treasure Hunter
 
-Open `Assets/TreasureHunt/Scenes/Main.unity` and press Play. Explore on foot with `LEFT`, `RIGHT`, `RUN`, and `SCAN`, or use A/D, W, and Space/E. The detector reports the nearest unfound artifact's strength, distance, and relative bearing; a scan pulse briefly amplifies nearby artifact caches.
+Open `Assets/TreasureHunt/Scenes/Main.unity` and press Play. Explore on foot by dragging the turn pad and holding `RUN`; use `SCAN` to pulse nearby caches. Keyboard controls remain A/D, W, and Space/E. The detector reports the nearest unfound artifact's strength, distance, and relative bearing.
 
 The UTC date alternates between the bright, overgrown Sunken Ruins and the nocturnal Crystal Hollow. Each programmatic world contains the same 12 safe, separated hiding locations for every player that day. Treasure Hunter records search routes at 10 Hz, reconstructs personal-best and daily-leader explorer ghosts, saves unlimited attempts, and offers `WATCH SEARCH`, `DAILY FILM`, and `HUNT AGAIN` after every round.
 
@@ -48,6 +48,7 @@ The UTC date alternates between the bright, overgrown Sunken Ruins and the noctu
 - A fully programmatic island with faceted terrain, beaches, surrounding water, rolling hills, a closed rally road, ramps, pine trees, rocks, lighting, and ten safe/separated relics.
 - A generated neon town with roads, alleys, buildings, plazas, ramps, tunnel gates, lighting, and ten safe/separated relics.
 - Physics hover-car controller with touch and keyboard input.
+- Shared proportional touch steering with large separated action buttons, persistent press capture, visible thumb feedback, and portrait safe-area placement across every app.
 - Timer, completion rules, deterministic scoring, player nameplate, and vehicle color selection.
 - Unlimited retries on the same daily seed, with durable local attempt history, attempt numbering, personal-best deltas, and best-ghost playback.
 - A real post-round top-five board showing each player's best run and total attempts; offline state is labeled honestly.
@@ -55,7 +56,7 @@ The UTC date alternates between the bright, overgrown Sunken Ruins and the noctu
 - Local personal-best ghost playback and share-caption metadata.
 - Cinematic replay playback with orbit, chase, overhead, and wide camera cuts; iOS device builds use ReplayKit's native preview/save/share sheet.
 - A Daily Film director that reconstructs up to 16 real racers, time-compresses their routes, switches racers/angles every three seconds, and records a vertical social clip through ReplayKit.
-- A separate Waypoint Wings app shell with two deterministic vertical stages, arcade aircraft controls, 14 ordered flight gates, aircraft ghosts, flight scoring, retry flow, and an aircraft-specific Daily Film.
+- A separate Waypoint Wings app shell with two deterministic vertical stages, a two-axis analog flight stick, smoothed steering, bounded pitch, release-to-auto-level assistance, live altitude/speed feedback, 14 ordered flight gates, aircraft ghosts, flight scoring, retry flow, and an aircraft-specific Daily Film.
 - A separate Waypoint Rally app shell with two deterministic ground stages, 10 ordered checkpoints, open route choice, a programmatic rally car, driver ghosts, scoring, retry flow, and a rally-specific Daily Film.
 - A separate Treasure Hunter app shell with two deterministic exploration stages, 12 any-order artifacts, an on-foot controller, directional detector, scan pulse, explorer ghosts, scoring, retry flow, and an explorer-specific Daily Film.
 - Shared `appKey`/`modeKey` replay contracts and generic backend RPCs for Signal Hunt, Waypoint Rally, Waypoint Wings, and Treasure Hunter.

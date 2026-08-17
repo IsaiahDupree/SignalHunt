@@ -39,6 +39,14 @@ namespace WaypointWings.PlayModeTests
             GameObject.Find("START CHALLENGE").GetComponent<Button>().onClick.Invoke();
             yield return new WaitForSeconds(3.6f);
             Assert.That(Object.FindAnyObjectByType<DailyMenuCameraMotion>(), Is.Null);
+            Assert.That(Object.FindAnyObjectByType<TouchControlPad>(), Is.Not.Null);
+            Assert.That(GameObject.Find("Flight Stick"), Is.Not.Null);
+            Assert.That(GameObject.Find("BOOST"), Is.Not.Null);
+            var forwardBeforeStickInput = aircraft.transform.forward;
+            FlightInputState.SetStick(new Vector2(0.65f, 0.45f));
+            yield return new WaitForSeconds(0.45f);
+            FlightInputState.Clear();
+            Assert.That(Vector3.Angle(forwardBeforeStickInput, aircraft.transform.forward), Is.GreaterThan(1f));
             for (var index = 0; index < session.Challenge.collectibleCount; index++)
             {
                 Assert.That(session.PassGate(index, $"test-gate-{index + 1:D2}"), Is.True);

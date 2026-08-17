@@ -25,12 +25,21 @@ namespace TreasureHunt.Gameplay
         private static bool _right;
         private static bool _run;
         private static bool _scan;
+        private static float _touchTurn;
 
-        public static float Turn => Mathf.Clamp(
-            (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) || _right ? 1f : 0f) -
-            (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) || _left ? 1f : 0f), -1f, 1f);
+        public static float Turn
+        {
+            get
+            {
+                var digital = (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) || _right ? 1f : 0f) -
+                              (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) || _left ? 1f : 0f);
+                return Mathf.Abs(digital) > 0.01f ? Mathf.Clamp(digital, -1f, 1f) : _touchTurn;
+            }
+        }
         public static bool Running => Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || _run;
         public static bool Scanning => Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.E) || _scan;
+
+        public static void SetTurn(float value) => _touchTurn = Mathf.Clamp(value, -1f, 1f);
 
         public static void Set(ExplorerControl control, bool pressed)
         {
@@ -46,10 +55,11 @@ namespace TreasureHunt.Gameplay
         public static void Clear()
         {
             _left = _right = _run = _scan = false;
+            _touchTurn = 0f;
         }
     }
 
-    public sealed class ExplorerHoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
+    public sealed class ExplorerHoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         private ExplorerControl _control;
         private Image _image;
@@ -64,7 +74,6 @@ namespace TreasureHunt.Gameplay
 
         public void OnPointerDown(PointerEventData eventData) => Set(true);
         public void OnPointerUp(PointerEventData eventData) => Set(false);
-        public void OnPointerExit(PointerEventData eventData) => Set(false);
         private void OnDisable() => Set(false);
 
         private void Set(bool pressed)

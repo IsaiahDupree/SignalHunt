@@ -41,6 +41,9 @@ namespace SignalHunt.PlayModeTests
             GameObject.Find("START CHALLENGE").GetComponent<Button>().onClick.Invoke();
             yield return new WaitForSeconds(3.6f);
             Assert.That(Object.FindAnyObjectByType<DailyMenuCameraMotion>(), Is.Null);
+            Assert.That(Object.FindAnyObjectByType<TouchControlPad>(), Is.Not.Null);
+            Assert.That(GameObject.Find("Steering Pad"), Is.Not.Null);
+            Assert.That(GameObject.Find("THRUST"), Is.Not.Null);
             for (var index = 1; index <= session.Challenge.collectibleCount; index++)
             {
                 session.Collect($"playmode-relic-{index:D2}");
