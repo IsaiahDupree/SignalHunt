@@ -5,7 +5,6 @@ namespace SignalHunt.Gameplay
     [RequireComponent(typeof(Rigidbody), typeof(BoxCollider))]
     public sealed class HoverVehicleController : MonoBehaviour
     {
-        private const float HoverHeight = 0.9f;
         private const float MaxForwardSpeed = 30f;
         private const float MaxReverseSpeed = 9f;
 
@@ -21,6 +20,7 @@ namespace SignalHunt.Gameplay
         {
             _body = GetComponent<Rigidbody>();
             _body.mass = 700f;
+            _body.useGravity = false;
             _body.linearDamping = 0.45f;
             _body.angularDamping = 3.5f;
             _body.centerOfMass = new Vector3(0f, -0.35f, 0f);
@@ -29,6 +29,9 @@ namespace SignalHunt.Gameplay
             _spawnPosition = spawnPosition;
             _spawnRotation = Quaternion.Euler(0f, heading, 0f);
             ResetToSpawn();
+            _body.constraints = RigidbodyConstraints.FreezePositionY |
+                                RigidbodyConstraints.FreezeRotationX |
+                                RigidbodyConstraints.FreezeRotationZ;
         }
 
         public void SetInputEnabled(bool enabled)
@@ -47,10 +50,15 @@ namespace SignalHunt.Gameplay
                 _body = GetComponent<Rigidbody>();
             }
 
+            var constraints = _body.constraints;
+            _body.constraints = RigidbodyConstraints.None;
+            transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
             _body.position = _spawnPosition;
             _body.rotation = _spawnRotation;
             _body.linearVelocity = Vector3.zero;
             _body.angularVelocity = Vector3.zero;
+            _body.constraints = constraints;
+            Physics.SyncTransforms();
         }
 
         private void FixedUpdate()
@@ -60,30 +68,16 @@ namespace SignalHunt.Gameplay
                 return;
             }
 
-            ApplyHover();
             ApplyGrip();
             if (_inputEnabled)
             {
-                ApplyDrive(VehicleInputState.Throttle, VehicleInputState.Steering);
+                ApplyDrive(VehicleInputState.Throttle, VehicleInputState.Steering, VehicleInputState.BrakeHeld);
             }
 
             if (_body.position.y < -4f || transform.up.y < -0.15f)
             {
                 ResetToSpawn();
             }
-        }
-
-        private void ApplyHover()
-        {
-            if (Physics.Raycast(_body.worldCenterOfMass, Vector3.down, out var hit, HoverHeight * 2.8f))
-            {
-                var compression = Mathf.Clamp01((HoverHeight - hit.distance) / HoverHeight);
-                var verticalSpeed = Vector3.Dot(_body.linearVelocity, Vector3.up);
-                _body.AddForce(Vector3.up * (compression * 52f - verticalSpeed * 7f), ForceMode.Acceleration);
-            }
-
-            var upright = Vector3.Cross(transform.up, Vector3.up);
-            _body.AddTorque(upright * 9f, ForceMode.Acceleration);
         }
 
         private void ApplyGrip()
@@ -93,9 +87,15 @@ namespace SignalHunt.Gameplay
             _body.AddForce(lateralCorrection, ForceMode.Acceleration);
         }
 
-        private void ApplyDrive(float throttle, float steering)
+        private void ApplyDrive(float throttle, float steering, bool brakeHeld)
         {
             var forwardSpeed = Vector3.Dot(_body.linearVelocity, transform.forward);
+            if (brakeHeld)
+            {
+                _body.AddForce(-transform.forward * Mathf.Max(8f, forwardSpeed * 1.2f), ForceMode.Acceleration);
+                _body.linearVelocity *= 0.965f;
+                throttle = 0f;
+            }
             var canAccelerate = throttle > 0f && forwardSpeed < MaxForwardSpeed;
             var canReverse = throttle < 0f && forwardSpeed > -MaxReverseSpeed;
             if (canAccelerate || canReverse)
@@ -108,5 +108,7 @@ namespace SignalHunt.Gameplay
             var direction = forwardSpeed < -0.5f ? -1f : 1f;
             _body.AddTorque(Vector3.up * (steering * direction * steeringAuthority * 8f), ForceMode.Acceleration);
         }
+
+
     }
 }

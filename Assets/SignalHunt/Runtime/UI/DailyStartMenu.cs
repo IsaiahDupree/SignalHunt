@@ -32,66 +32,66 @@ namespace SignalHunt.UI
                 DailyGameCatalog.TreasureHuntAppKey => new DailyStartMenuContent
                 {
                     title = "TREASURE HUNTER",
-                    networkLabel = "THE DAILY WORLD HUNT",
-                    tagline = "One hidden world. One trail only you will make.",
-                    objective = "Explore freely, pulse your detector, and recover every lost artifact before the clock wins.",
-                    controls = "RUN to move · LEFT / RIGHT to steer · SCAN to reveal nearby treasure",
+                    networkLabel = "TODAY'S ISLAND",
+                    tagline = "A bright island. A fresh trail every day.",
+                    objective = "Follow the island paths and recover every hidden artifact.",
+                    controls = "DRAG TO MOVE  ·  TAP SCAN",
                     itemSummary = $"{challenge.collectibleCount} LOST ARTIFACTS",
-                    primaryAction = "START TREASURE HUNT",
-                    socialHook = "Every search trail can join today's cinematic community film.",
+                    primaryAction = "PLAY",
+                    socialHook = "Same island for everyone. Retry whenever you want.",
                     loadingVerb = "BURYING TODAY'S ARTIFACTS",
                     accent = new Color(1f, 0.70f, 0.10f),
                     secondary = new Color(0.04f, 0.90f, 1f),
-                    backgroundTop = new Color(0.015f, 0.07f, 0.13f),
-                    backgroundBottom = new Color(0.005f, 0.015f, 0.04f)
+                    backgroundTop = new Color(0.18f, 0.62f, 0.82f),
+                    backgroundBottom = new Color(0.04f, 0.34f, 0.48f)
                 },
                 DailyGameCatalog.WaypointRallyAppKey => new DailyStartMenuContent
                 {
                     title = "WAYPOINT RALLY",
-                    networkLabel = "THE DAILY ROUTE RACE",
-                    tagline = "Same streets. Different instincts. Fastest route wins.",
-                    objective = "Drive every waypoint in order, hunt for shortcuts, and replay the route until it is yours.",
-                    controls = "GO to accelerate · LEFT / RIGHT to steer · BRAKE to carve tight turns",
+                    networkLabel = "TODAY'S ISLAND",
+                    tagline = "One sunny island loop. Find your fastest line.",
+                    objective = "Follow the island road and clear every gate in order.",
+                    controls = "AUTO-DRIVE  ·  DRAG TO STEER  ·  HOLD BRAKE",
                     itemSummary = $"{challenge.collectibleCount} ROUTE WAYPOINTS",
-                    primaryAction = "START DAILY RALLY",
-                    socialHook = "Ghost routes expose the shortcuts that move the daily leaderboard.",
+                    primaryAction = "PLAY",
+                    socialHook = "Same island for everyone. Retry whenever you want.",
                     loadingVerb = "DRAWING TODAY'S ROUTE",
                     accent = new Color(1f, 0.38f, 0.08f),
                     secondary = new Color(0.05f, 0.86f, 1f),
-                    backgroundTop = new Color(0.15f, 0.045f, 0.025f),
-                    backgroundBottom = new Color(0.025f, 0.012f, 0.035f)
+                    backgroundTop = new Color(0.24f, 0.68f, 0.88f),
+                    backgroundBottom = new Color(0.06f, 0.40f, 0.52f)
                 },
                 DailyGameCatalog.WaypointWingsAppKey => new DailyStartMenuContent
                 {
                     title = "WAYPOINT WINGS",
-                    networkLabel = "THE DAILY FLIGHT PATH",
-                    tagline = "Own the sky before the rest of the world finds the line.",
-                    objective = "Thread every air gate, skim the terrain, and refine the fastest path through today's sky.",
-                    controls = "BOOST for speed · LEFT / RIGHT to bank · UP / DOWN to pitch",
+                    networkLabel = "TODAY'S ISLANDS",
+                    tagline = "A calm island flight with a new path every day.",
+                    objective = "Guide the plane through each wide air gate in order.",
+                    controls = "DRAG TO FLY  ·  HOLD BOOST",
                     itemSummary = $"{challenge.collectibleCount} AIR GATES",
-                    primaryAction = "TAKE FLIGHT",
-                    socialHook = "Closest calls and fastest paths become today's shared flight film.",
+                    primaryAction = "PLAY",
+                    socialHook = "Crashes respawn automatically. Retry whenever you want.",
                     loadingVerb = "OPENING TODAY'S SKYWAY",
                     accent = new Color(0.12f, 0.78f, 1f),
-                    secondary = new Color(1f, 0.18f, 0.72f),
-                    backgroundTop = new Color(0.025f, 0.09f, 0.19f),
-                    backgroundBottom = new Color(0.008f, 0.012f, 0.055f)
+                    secondary = new Color(1f, 0.72f, 0.18f),
+                    backgroundTop = new Color(0.30f, 0.72f, 0.94f),
+                    backgroundBottom = new Color(0.08f, 0.46f, 0.68f)
                 },
                 _ => new DailyStartMenuContent
                 {
                     title = "SIGNAL HUNT",
-                    networkLabel = "THE DAILY SIGNAL RACE",
-                    tagline = "Everybody gets the same world. Nobody takes the same path.",
-                    objective = "Race across today's generated world and lock every hidden signal as fast as possible.",
-                    controls = "GO to accelerate · LEFT / RIGHT to steer · BRAKE to turn sharply",
+                    networkLabel = "TODAY'S ISLAND",
+                    tagline = "A simple island hunt with a fresh route every day.",
+                    objective = "Follow the island road and collect every signal.",
+                    controls = "AUTO-DRIVE  ·  DRAG TO STEER  ·  HOLD BRAKE",
                     itemSummary = $"{challenge.collectibleCount} HIDDEN SIGNALS",
-                    primaryAction = "START TODAY'S HUNT",
-                    socialHook = "Your route, near misses, and best finish can join today's Daily Film.",
+                    primaryAction = "PLAY",
+                    socialHook = "Same island for everyone. Retry whenever you want.",
                     loadingVerb = "GENERATING TODAY'S SIGNAL GRID",
                     accent = new Color(0.06f, 0.88f, 1f),
-                    secondary = new Color(1f, 0.12f, 0.67f),
-                    backgroundTop = new Color(0.025f, 0.065f, 0.16f),
-                    backgroundBottom = new Color(0.008f, 0.008f, 0.045f)
+                    secondary = new Color(1f, 0.72f, 0.18f),
+                    backgroundTop = new Color(0.24f, 0.70f, 0.90f),
+                    backgroundBottom = new Color(0.05f, 0.42f, 0.56f)
                 }
             };
         }
@@ -149,7 +149,7 @@ namespace SignalHunt.UI
             ApplyProgress();
             _loadingRoot.SetActive(false);
             _menuRoot.SetActive(true);
-            _backgroundImage.color = new Color(1f, 1f, 1f, 0.64f);
+            _backgroundImage.color = new Color(1f, 1f, 1f, 0.28f);
             UpdateResetText();
         }
 
@@ -255,9 +255,7 @@ namespace SignalHunt.UI
         private void BuildLoading(Transform parent)
         {
             var safe = SafeArea(parent);
-            Text("DAILY CHALLENGE NETWORK", safe, new Vector2(0.08f, 0.86f), new Vector2(0.92f, 0.91f),
-                22, FontStyle.Bold, new Color(0.75f, 0.84f, 0.95f), TextAnchor.MiddleCenter, 3f);
-            Text(_content.title, safe, new Vector2(0.08f, 0.77f), new Vector2(0.92f, 0.86f),
+            Text(_content.title, safe, new Vector2(0.08f, 0.79f), new Vector2(0.92f, 0.88f),
                 58, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, 8f);
 
             var orbitContainer = Rect("Loading Orbit", safe);
@@ -279,19 +277,17 @@ namespace SignalHunt.UI
             _loadingCore = Image("Daily Seed Core", orbitContainer, UiSpriteFactory.Circle, _content.secondary);
             _loadingCore.rectTransform.anchorMin = _loadingCore.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _loadingCore.rectTransform.sizeDelta = new Vector2(104f, 104f);
-            Text(_challenge.displaySeed.ToString("D5"), orbitContainer, new Vector2(0.35f, 0.43f), new Vector2(0.65f, 0.57f),
-                26, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
 
             _loadingStatus = Text(_content.loadingVerb, safe, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.39f),
                 23, FontStyle.Bold, _content.accent, TextAnchor.MiddleCenter, 2f);
-            Text($"{_challenge.stageDisplayName.ToUpperInvariant()}  //  {_challenge.dateKey}", safe,
+            Text(_challenge.stageDisplayName.ToUpperInvariant(), safe,
                 new Vector2(0.08f, 0.295f), new Vector2(0.92f, 0.34f), 19, FontStyle.Normal,
                 new Color(0.64f, 0.73f, 0.86f), TextAnchor.MiddleCenter, 2f);
 
             var track = Panel("Loading Track", safe, new Vector2(0.12f, 0.25f), new Vector2(0.88f, 0.264f),
                 new Color(1f, 1f, 1f, 0.13f));
             _progressFill = Panel("Loading Progress", track, Vector2.zero, new Vector2(0.08f, 1f), _content.accent);
-            Text("SAME SEED  ·  SAME WORLD  ·  NEW PATHS", safe, new Vector2(0.08f, 0.17f),
+            Text("A NEW ISLAND EVERY DAY", safe, new Vector2(0.08f, 0.17f),
                 new Vector2(0.92f, 0.22f), 18, FontStyle.Bold, new Color(0.64f, 0.72f, 0.84f),
                 TextAnchor.MiddleCenter, 3f);
         }
@@ -299,76 +295,47 @@ namespace SignalHunt.UI
         private void BuildMenu(Transform parent)
         {
             var safe = SafeArea(parent);
-            var network = Panel("Network Label", safe, new Vector2(0.055f, 0.91f), new Vector2(0.945f, 0.963f),
-                new Color(0.02f, 0.04f, 0.09f, 0.72f));
+            var network = Panel("Island Day", safe, new Vector2(0.055f, 0.91f), new Vector2(0.945f, 0.963f),
+                new Color(0.02f, 0.16f, 0.22f, 0.76f));
             Panel("Network Accent", network, new Vector2(0f, 0f), new Vector2(0.012f, 1f), _content.accent);
             Text(_content.networkLabel, network, new Vector2(0.04f, 0f), new Vector2(0.72f, 1f), 21,
                 FontStyle.Bold, _content.accent, TextAnchor.MiddleLeft, 3f);
             _resetText = Text(string.Empty, network, new Vector2(0.66f, 0f), new Vector2(0.96f, 1f), 18,
                 FontStyle.Bold, Color.white, TextAnchor.MiddleRight, 3f);
 
-            Text(_content.title, safe, new Vector2(0.055f, 0.835f), new Vector2(0.945f, 0.91f), 55,
+            Text(_content.title, safe, new Vector2(0.055f, 0.825f), new Vector2(0.945f, 0.91f), 58,
                 FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, 8f);
-            Text(_content.tagline, safe, new Vector2(0.055f, 0.785f), new Vector2(0.945f, 0.84f), 22,
+            Text(_content.tagline, safe, new Vector2(0.055f, 0.765f), new Vector2(0.945f, 0.825f), 23,
                 FontStyle.Normal, new Color(0.76f, 0.82f, 0.91f), TextAnchor.MiddleLeft, 2f);
 
-            var hero = Panel("Today's World", safe, new Vector2(0.055f, 0.535f), new Vector2(0.945f, 0.775f),
-                new Color(0.018f, 0.035f, 0.075f, 0.91f));
+            var hero = Panel("Today's Island", safe, new Vector2(0.055f, 0.485f), new Vector2(0.945f, 0.745f),
+                new Color(0.018f, 0.11f, 0.15f, 0.86f));
             var heroOutline = hero.gameObject.AddComponent<Outline>();
             heroOutline.effectColor = new Color(_content.accent.r, _content.accent.g, _content.accent.b, 0.56f);
             heroOutline.effectDistance = new Vector2(2f, -2f);
-            Text("TODAY // " + _challenge.dateKey.Replace("-", "."), hero, new Vector2(0.055f, 0.76f),
-                new Vector2(0.67f, 0.94f), 18, FontStyle.Bold, _content.accent, TextAnchor.MiddleLeft, 3f);
-            Text(_challenge.stageDisplayName.ToUpperInvariant(), hero, new Vector2(0.055f, 0.43f),
-                new Vector2(0.94f, 0.76f), 43, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, 6f);
-            Text(_content.objective, hero, new Vector2(0.055f, 0.15f), new Vector2(0.94f, 0.43f), 21,
+            Text("TODAY  ·  " + _challenge.dateKey, hero, new Vector2(0.055f, 0.78f),
+                new Vector2(0.94f, 0.94f), 18, FontStyle.Bold, _content.accent, TextAnchor.MiddleLeft, 3f);
+            Text(_challenge.stageDisplayName.ToUpperInvariant(), hero, new Vector2(0.055f, 0.48f),
+                new Vector2(0.94f, 0.78f), 45, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, 6f);
+            Text(_content.objective, hero, new Vector2(0.055f, 0.23f), new Vector2(0.94f, 0.49f), 22,
                 FontStyle.Normal, new Color(0.76f, 0.82f, 0.91f), TextAnchor.UpperLeft, 2f);
-            var seedPill = Panel("Seed Pill", hero, new Vector2(0.70f, 0.76f), new Vector2(0.94f, 0.92f),
-                new Color(_content.secondary.r, _content.secondary.g, _content.secondary.b, 0.18f));
-            Text("SEED " + _challenge.displaySeed.ToString("D5"), seedPill, new Vector2(0.05f, 0f),
-                new Vector2(0.95f, 1f), 18, FontStyle.Bold, _content.secondary, TextAnchor.MiddleCenter);
-
-            var chips = Rect("Challenge Facts", safe);
-            Anchor(chips, new Vector2(0.055f, 0.475f), new Vector2(0.945f, 0.525f));
-            FactChip(_content.itemSummary, chips, 0f, 0.49f, _content.accent);
-            FactChip("ONE SHARED WORLD", chips, 0.51f, 1f, _content.secondary);
-
-            var player = Panel("Player Card", safe, new Vector2(0.055f, 0.385f), new Vector2(0.945f, 0.465f),
-                new Color(0.018f, 0.035f, 0.075f, 0.82f));
-            Text("PLAYER", player, new Vector2(0.04f, 0.50f), new Vector2(0.30f, 0.88f), 15,
-                FontStyle.Bold, new Color(0.58f, 0.67f, 0.79f), TextAnchor.MiddleLeft);
-            Text(PlayerIdentity.DisplayName.ToUpperInvariant(), player, new Vector2(0.04f, 0.08f),
-                new Vector2(0.47f, 0.55f), 24, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, 2f);
             var best = ReplayStore.LoadBest(_challenge.challengeId);
             var attempts = ReplayStore.GetAttemptCount(_challenge.challengeId);
-            Text(attempts == 0 ? "FIRST RUN" : $"{attempts} ATTEMPT{(attempts == 1 ? string.Empty : "S")}", player,
-                new Vector2(0.47f, 0.51f), new Vector2(0.72f, 0.88f), 15, FontStyle.Bold,
-                new Color(0.58f, 0.67f, 0.79f), TextAnchor.MiddleRight);
-            Text(FormatBest(best), player, new Vector2(0.40f, 0.08f), new Vector2(0.72f, 0.55f), 21,
-                FontStyle.Bold, _content.accent, TextAnchor.MiddleRight, 2f);
-            var styleButton = ActionButton("PLAYER COLOR", "COLOR", player, new Vector2(0.75f, 0.14f),
-                new Vector2(0.96f, 0.86f), _content.secondary, () => StyleRequested?.Invoke());
-            _styleText = styleButton.GetComponentInChildren<Text>();
-            NotifyStyleChanged(SignalHunt.Gameplay.PlayerCosmetics.VehicleColorIndex);
+            Text(_content.itemSummary, hero, new Vector2(0.055f, 0.055f), new Vector2(0.40f, 0.22f), 18,
+                FontStyle.Bold, _content.secondary, TextAnchor.MiddleLeft, 2f);
+            Text(attempts == 0 ? "FIRST RUN" : FormatBest(best), hero, new Vector2(0.52f, 0.055f),
+                new Vector2(0.94f, 0.22f), 18, FontStyle.Bold, _content.accent, TextAnchor.MiddleRight, 2f);
+
+            var controls = Panel("Simple Controls", safe, new Vector2(0.055f, 0.39f), new Vector2(0.945f, 0.465f),
+                new Color(1f, 1f, 1f, 0.12f));
+            Text(_content.controls, controls, new Vector2(0.04f, 0f), new Vector2(0.96f, 1f), 20,
+                FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, 2f);
 
             _primaryButton = ActionButton("START CHALLENGE", _content.primaryAction, safe,
-                new Vector2(0.055f, 0.275f), new Vector2(0.945f, 0.37f), _content.accent,
+                new Vector2(0.055f, 0.255f), new Vector2(0.945f, 0.37f), _content.accent,
                 () => StartCoroutine(EnterGame()));
-            ActionButton("HOW TO PLAY", "HOW TO PLAY", safe, new Vector2(0.055f, 0.195f),
-                new Vector2(0.49f, 0.26f), _content.secondary, ShowInstructions);
-            var filmButton = ActionButton("DAILY FILM PREVIEW", attempts > 0 ? "WATCH DAILY FILM" : "FILM AFTER FIRST RUN",
-                safe, new Vector2(0.51f, 0.195f), new Vector2(0.945f, 0.26f), _content.secondary,
-                () => FilmRequested?.Invoke());
-            filmButton.interactable = attempts > 0;
-            filmButton.targetGraphic.color = new Color(filmButton.targetGraphic.color.r, filmButton.targetGraphic.color.g,
-                filmButton.targetGraphic.color.b, attempts > 0 ? 0.36f : 0.14f);
-
-            Text(_content.socialHook, safe, new Vector2(0.075f, 0.105f), new Vector2(0.925f, 0.17f), 19,
+            Text(_content.socialHook, safe, new Vector2(0.075f, 0.145f), new Vector2(0.925f, 0.225f), 19,
                 FontStyle.Bold, new Color(0.72f, 0.79f, 0.88f), TextAnchor.MiddleCenter, 3f);
-            Text("PLAY  ·  IMPROVE  ·  REPLAY  ·  SHARE", safe, new Vector2(0.075f, 0.055f),
-                new Vector2(0.925f, 0.10f), 17, FontStyle.Bold, _content.accent, TextAnchor.MiddleCenter, 4f);
-
-            BuildInstructions(parent);
         }
 
         private void BuildInstructions(Transform parent)

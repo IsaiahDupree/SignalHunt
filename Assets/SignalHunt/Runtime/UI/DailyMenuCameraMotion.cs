@@ -27,6 +27,8 @@ namespace SignalHunt.UI
         private bool[] _focusCanvasStates;
         private readonly List<HiddenActor> _hiddenActors = new();
 
+        public Transform Focus => _focus;
+
         public void Initialize(FollowCamera followCamera, Transform focus, DailyChallenge challenge)
         {
             _followCamera = followCamera;

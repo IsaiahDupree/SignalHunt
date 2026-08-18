@@ -92,13 +92,13 @@ namespace WaypointWings.Gameplay
     [RequireComponent(typeof(Rigidbody), typeof(BoxCollider))]
     public sealed class AircraftController : MonoBehaviour
     {
-        private const float CruiseSpeed = 25f;
-        private const float BoostSpeed = 46f;
-        private const float TurnRate = 52f;
-        private const float PitchRate = 34f;
-        private const float AutoLevelRate = 9f;
-        private const float MinimumPitch = -27f;
-        private const float MaximumPitch = 34f;
+        private const float CruiseSpeed = 20f;
+        private const float BoostSpeed = 32f;
+        private const float TurnRate = 58f;
+        private const float PitchRate = 28f;
+        private const float AutoLevelRate = 12f;
+        private const float MinimumPitch = -20f;
+        private const float MaximumPitch = 25f;
         private Rigidbody _body;
         private Transform _visual;
         private Vector3 _spawnPosition;
@@ -107,9 +107,11 @@ namespace WaypointWings.Gameplay
         private float _smoothedTurn;
         private float _smoothedPitch;
         private bool _inputEnabled;
+        private bool _crashReported;
 
         public float Speed => _speed;
         public bool IsBoosting => _inputEnabled && FlightInputState.Boosting;
+        public event Action Crashed;
 
         public void Initialize(Vector3 position, Quaternion rotation, Transform visual)
         {
@@ -129,6 +131,10 @@ namespace WaypointWings.Gameplay
         public void SetInputEnabled(bool enabled)
         {
             _inputEnabled = enabled;
+            if (enabled)
+            {
+                _crashReported = false;
+            }
             if (!enabled)
             {
                 FlightInputState.Clear();
@@ -174,8 +180,8 @@ namespace WaypointWings.Gameplay
                 return;
             }
 
-            _smoothedTurn = Mathf.MoveTowards(_smoothedTurn, FlightInputState.Turn, Time.fixedDeltaTime * 4.5f);
-            _smoothedPitch = Mathf.MoveTowards(_smoothedPitch, FlightInputState.Pitch, Time.fixedDeltaTime * 4.5f);
+            _smoothedTurn = Mathf.MoveTowards(_smoothedTurn, FlightInputState.Turn, Time.fixedDeltaTime * 6f);
+            _smoothedPitch = Mathf.MoveTowards(_smoothedPitch, FlightInputState.Pitch, Time.fixedDeltaTime * 6f);
             var desiredSpeed = FlightInputState.Boosting ? BoostSpeed : CruiseSpeed;
             _speed = Mathf.MoveTowards(_speed, desiredSpeed, Time.fixedDeltaTime * 16f);
 
@@ -191,7 +197,7 @@ namespace WaypointWings.Gameplay
             var pitchRadians = targetPitch * Mathf.Deg2Rad;
             var desiredForward = new Vector3(Mathf.Sin(yawRadians) * Mathf.Cos(pitchRadians),
                 Mathf.Sin(pitchRadians), Mathf.Cos(yawRadians) * Mathf.Cos(pitchRadians));
-            var response = 1f - Mathf.Exp(-8f * Time.fixedDeltaTime);
+            var response = 1f - Mathf.Exp(-10f * Time.fixedDeltaTime);
             var controlledForward = Vector3.Slerp(forward, desiredForward, response).normalized;
             _body.MoveRotation(Quaternion.LookRotation(controlledForward, Vector3.up));
             _body.linearVelocity = controlledForward * _speed;
@@ -206,8 +212,29 @@ namespace WaypointWings.Gameplay
                 Mathf.Abs(_body.position.x - _spawnPosition.x) > 230f ||
                 Mathf.Abs(_body.position.z - _spawnPosition.z) > 480f)
             {
-                ResetToSpawn();
+                TriggerCrash();
             }
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision != null && collision.collider != null)
+            {
+                TriggerCrash();
+            }
+        }
+
+        public void TriggerCrash()
+        {
+            if (!_inputEnabled || _crashReported)
+            {
+                return;
+            }
+            _crashReported = true;
+            FlightInputState.Clear();
+            _body.linearVelocity = Vector3.zero;
+            _body.angularVelocity = Vector3.zero;
+            Crashed?.Invoke();
         }
     }
 
@@ -305,16 +332,19 @@ namespace WaypointWings.Gameplay
         private AircraftController _aircraft;
         private int _gateCount;
         private float _elapsed;
+        private bool _restarting;
 
         public FlightState State { get; private set; } = FlightState.Countdown;
         public float Elapsed => _elapsed;
         public int ClearedCount => _cleared.Count;
         public SignalHunt.Core.DailyChallenge Challenge => _challenge;
+        public int RestartCount { get; private set; }
 
         public event Action<string> StatusChanged;
         public event Action<float> TimeChanged;
         public event Action<int, int> GateCountChanged;
         public event Action<string> GateCleared;
+        public event Action Restarted;
         public event Action<HuntResult> Completed;
 
         public void Initialize(SignalHunt.Core.DailyChallenge challenge, AircraftController aircraft, int gateCount)
@@ -322,6 +352,7 @@ namespace WaypointWings.Gameplay
             _challenge = challenge;
             _aircraft = aircraft;
             _gateCount = gateCount;
+            _aircraft.Crashed += OnAircraftCrashed;
             _aircraft.SetInputEnabled(false);
         }
 
@@ -358,6 +389,37 @@ namespace WaypointWings.Gameplay
             StatusChanged?.Invoke(string.Empty);
         }
 
+        private void OnAircraftCrashed()
+        {
+            if (State == FlightState.Flying && !_restarting)
+            {
+                StartCoroutine(RestartAfterCrash());
+            }
+        }
+
+        private IEnumerator RestartAfterCrash()
+        {
+            _restarting = true;
+            State = FlightState.Countdown;
+            _aircraft.SetInputEnabled(false);
+            StatusChanged?.Invoke("CRASHED · RESTARTING");
+            yield return new WaitForSeconds(0.55f);
+            _cleared.Clear();
+            _elapsed = 0f;
+            RestartCount++;
+            foreach (var gate in FindObjectsByType<WaypointWings.World.FlightGate>(
+                         FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                gate.ResetForRestart();
+            }
+            _aircraft.ResetToSpawn();
+            GateCountChanged?.Invoke(0, _gateCount);
+            TimeChanged?.Invoke(0f);
+            Restarted?.Invoke();
+            _restarting = false;
+            yield return CountdownRoutine();
+        }
+
         private void Update()
         {
             if (State != FlightState.Flying)
@@ -392,6 +454,14 @@ namespace WaypointWings.Gameplay
             };
             StatusChanged?.Invoke(complete ? "COURSE CLEARED" : "FLIGHT ENDED");
             Completed?.Invoke(result);
+        }
+
+        private void OnDestroy()
+        {
+            if (_aircraft != null)
+            {
+                _aircraft.Crashed -= OnAircraftCrashed;
+            }
         }
     }
 
@@ -437,6 +507,7 @@ namespace WaypointWings.Gameplay
                 vehicleColorIndex = colorIndex
             };
             session.GateCleared += OnGateCleared;
+            session.Restarted += OnRestarted;
             session.Completed += OnCompleted;
         }
 
@@ -454,6 +525,13 @@ namespace WaypointWings.Gameplay
         {
             _pendingGate = id;
             Capture("gate-clear");
+        }
+
+        private void OnRestarted()
+        {
+            _run.frames.Clear();
+            _pendingGate = string.Empty;
+            _nextSample = 0f;
         }
 
         private void OnCompleted(HuntResult result)

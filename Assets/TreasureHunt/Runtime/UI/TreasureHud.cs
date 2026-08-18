@@ -112,7 +112,7 @@ namespace TreasureHunt.UI
                 return;
             }
             var builder = new StringBuilder();
-            for (var index = 0; index < Mathf.Min(5, entries.Length); index++)
+            for (var index = 0; index < Mathf.Min(3, entries.Length); index++)
             {
                 var entry = entries[index];
                 var name = string.IsNullOrWhiteSpace(entry.playerName) ? "HUNTER" : entry.playerName.ToUpperInvariant();
@@ -122,7 +122,7 @@ namespace TreasureHunt.UI
                 }
                 builder.Append(entry.rank).Append("  ").Append(name).Append("  ")
                     .Append(FormatMilliseconds(entry.timeMs)).Append("  ×").Append(Mathf.Max(1, entry.attemptCount));
-                if (index < Mathf.Min(5, entries.Length) - 1)
+                if (index < Mathf.Min(3, entries.Length) - 1)
                 {
                     builder.AppendLine();
                 }
@@ -156,27 +156,20 @@ namespace TreasureHunt.UI
 
             var header = Panel("Treasure Header", safe, new Vector2(0.045f, 0.865f), new Vector2(0.955f, 0.972f), Navy);
             Panel("Header Accent", header, new Vector2(0f, 0.12f), new Vector2(0.012f, 0.88f), Gold);
-            Text("TREASURE HUNTER", header, new Vector2(0.05f, 0.50f), new Vector2(0.62f, 0.91f), 42,
+            _artifactText = Text("0 / 10 FOUND", header, new Vector2(0.05f, 0.16f), new Vector2(0.48f, 0.84f), 30,
                 FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
-            Text($"{challenge.stageDisplayName.ToUpperInvariant()} · {challenge.dateKey} · {challenge.displaySeed:D5}",
-                header, new Vector2(0.05f, 0.12f), new Vector2(0.69f, 0.50f), 21, FontStyle.Normal, Muted,
-                TextAnchor.MiddleLeft);
-            _timeText = Text("00:00.000", header, new Vector2(0.63f, 0.52f), new Vector2(0.94f, 0.90f), 38,
+            _timeText = Text("00:00.000", header, new Vector2(0.52f, 0.16f), new Vector2(0.94f, 0.84f), 38,
                 FontStyle.Bold, Color.white, TextAnchor.MiddleRight);
-            _artifactText = Text("0 / 12 FOUND", header, new Vector2(0.63f, 0.12f), new Vector2(0.94f, 0.48f), 22,
-                FontStyle.Bold, Gold, TextAnchor.MiddleRight);
 
             var progress = Panel("Treasure Progress", safe, new Vector2(0.075f, 0.852f), new Vector2(0.925f, 0.858f),
                 new Color(0.15f, 0.22f, 0.34f, 0.9f));
             _progressFill = Panel("Treasure Progress Fill", progress, Vector2.zero, new Vector2(0f, 1f), Gold);
 
             var detectorPanel = Panel("Treasure Detector", safe,
-                new Vector2(0.05f, 0.792f), new Vector2(0.71f, 0.837f), Navy);
+                new Vector2(0.05f, 0.792f), new Vector2(0.95f, 0.837f), Navy);
             _detectorPanel = detectorPanel.gameObject;
             _detectorText = Text("DETECTOR CALIBRATING…", detectorPanel,
                 new Vector2(0.05f, 0f), new Vector2(0.95f, 1f), 22, FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
-            _colorButton = ActionButton("COLOR", safe, new Vector2(0.74f, 0.792f), new Vector2(0.95f, 0.837f), Gold,
-                () => StyleRequested?.Invoke());
             _statusText = Text(string.Empty, safe, new Vector2(0.12f, 0.46f), new Vector2(0.88f, 0.60f), 72,
                 FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
 
@@ -187,11 +180,9 @@ namespace TreasureHunt.UI
             controls.anchorMax = new Vector2(1f, 0.285f);
             controls.offsetMin = controls.offsetMax = Vector2.zero;
             SteeringPad(controls, Cyan);
-            ControlButton("SCAN", controls, new Vector2(0.54f, 0.16f), new Vector2(0.72f, 0.62f),
+            ControlButton("SCAN", controls, new Vector2(0.72f, 0.12f), new Vector2(0.96f, 0.78f),
                 ExplorerControl.Scan, Gold);
-            ControlButton("RUN", controls, new Vector2(0.75f, 0.10f), new Vector2(0.96f, 0.78f),
-                ExplorerControl.Run, Cyan);
-            Text("DRAG TO TURN  ·  HOLD TO RUN", controls, new Vector2(0.05f, 0.88f),
+            Text("DRAG TO MOVE  ·  TAP SCAN", controls, new Vector2(0.05f, 0.88f),
                 new Vector2(0.95f, 0.98f), 19, FontStyle.Bold, Muted, TextAnchor.MiddleCenter).raycastTarget = false;
             BuildResultPanel(safe);
         }
@@ -212,11 +203,7 @@ namespace TreasureHunt.UI
                 new Vector2(0.92f, 0.56f), 21, FontStyle.Bold, Color.white, TextAnchor.UpperLeft);
             _network = Text(string.Empty, panel, new Vector2(0.08f, 0.24f), new Vector2(0.92f, 0.31f), 18,
                 FontStyle.Normal, Muted, TextAnchor.MiddleCenter);
-            ActionButton("WATCH SEARCH", panel, new Vector2(0.06f, 0.12f), new Vector2(0.48f, 0.23f), Cyan,
-                () => WatchRequested?.Invoke());
-            ActionButton("DAILY FILM", panel, new Vector2(0.52f, 0.12f), new Vector2(0.94f, 0.23f), Cyan,
-                () => FilmRequested?.Invoke());
-            ActionButton("HUNT AGAIN", panel, new Vector2(0.06f, 0.025f), new Vector2(0.94f, 0.105f), Gold,
+            ActionButton("PLAY AGAIN", panel, new Vector2(0.06f, 0.045f), new Vector2(0.94f, 0.19f), Gold,
                 () => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex));
             _resultPanel.SetActive(false);
         }
@@ -235,7 +222,10 @@ namespace TreasureHunt.UI
             ExplorerInputState.Clear();
             _controls.SetActive(false);
             _detectorPanel.SetActive(false);
-            _colorButton.SetActive(false);
+            if (_colorButton != null)
+            {
+                _colorButton.SetActive(false);
+            }
             _statusText.gameObject.SetActive(false);
             _resultPanel.SetActive(true);
             _resultTitle.text = result.completed ? "VAULT COMPLETE" : "SEARCH ENDED";
@@ -290,7 +280,7 @@ namespace TreasureHunt.UI
 
         private void SteeringPad(Transform parent, Color color)
         {
-            var pad = Panel("Steering Pad", parent, new Vector2(0.04f, 0.10f), new Vector2(0.48f, 0.83f),
+            var pad = Panel("Move Pad", parent, new Vector2(0.04f, 0.10f), new Vector2(0.64f, 0.83f),
                 new Color(Navy.r, Navy.g, Navy.b, 0.78f));
             var outline = pad.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(color.r, color.g, color.b, 0.72f);
@@ -298,13 +288,16 @@ namespace TreasureHunt.UI
             var guide = Panel("Steering Track", pad, new Vector2(0.12f, 0.48f), new Vector2(0.88f, 0.52f),
                 new Color(color.r, color.g, color.b, 0.28f));
             guide.GetComponent<Image>().raycastTarget = false;
+            var verticalGuide = Panel("Movement Track", pad, new Vector2(0.49f, 0.14f), new Vector2(0.51f, 0.86f),
+                new Color(color.r, color.g, color.b, 0.20f));
+            verticalGuide.GetComponent<Image>().raycastTarget = false;
             var thumb = Panel("Steering Thumb", pad, new Vector2(0.38f, 0.28f), new Vector2(0.62f, 0.72f),
                 new Color(color.r, color.g, color.b, 0.88f));
             thumb.GetComponent<Image>().raycastTarget = false;
-            Text("TURN", pad, new Vector2(0.30f, 0.03f), new Vector2(0.70f, 0.22f), 20,
+            Text("MOVE", pad, new Vector2(0.30f, 0.03f), new Vector2(0.70f, 0.22f), 20,
                 FontStyle.Bold, Color.white, TextAnchor.MiddleCenter).raycastTarget = false;
             pad.gameObject.AddComponent<TouchControlPad>().Initialize(
-                pad, thumb, value => ExplorerInputState.SetTurn(value.x), true);
+                pad, thumb, ExplorerInputState.SetMove, false);
         }
 
         private GameObject ActionButton(string label, Transform parent, Vector2 min, Vector2 max, Color color,

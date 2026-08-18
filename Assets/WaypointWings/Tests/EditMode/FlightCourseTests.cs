@@ -17,9 +17,9 @@ namespace WaypointWings.Tests
             Assert.That(challenge.appKey, Is.EqualTo(DailyGameCatalog.WaypointWingsAppKey));
             Assert.That(challenge.modeKey, Is.EqualTo("daily-flight"));
             Assert.That(challenge.stageKey, Is.EqualTo("archipelago"));
-            Assert.That(challenge.worldTemplate, Is.EqualTo("wings-archipelago-v1"));
-            Assert.That(challenge.generationVersion, Is.EqualTo("wings-course-generator-v1"));
-            Assert.That(challenge.collectibleCount, Is.EqualTo(14));
+            Assert.That(challenge.worldTemplate, Is.EqualTo("wings-archipelago-v2"));
+            Assert.That(challenge.generationVersion, Is.EqualTo("wings-course-generator-v2"));
+            Assert.That(challenge.collectibleCount, Is.EqualTo(12));
         }
 
         [Test]
@@ -30,13 +30,14 @@ namespace WaypointWings.Tests
             var second = FlightCourseGenerator.Generate(challenge);
 
             Assert.That(JsonUtility.ToJson(first), Is.EqualTo(JsonUtility.ToJson(second)));
-            Assert.That(first.gates, Has.Count.EqualTo(14));
-            Assert.That(first.islands, Has.Count.EqualTo(22));
-            Assert.That(first.clouds, Has.Count.EqualTo(34));
+            Assert.That(first.gates, Has.Count.EqualTo(12));
+            Assert.That(first.islands, Has.Count.EqualTo(14));
+            Assert.That(first.clouds, Has.Count.EqualTo(20));
             Assert.That(first.gates[0].position.y, Is.Not.EqualTo(first.gates[^1].position.y).Within(0.01f));
             for (var index = 1; index < first.gates.Count; index++)
             {
-                Assert.That(Vector3.Distance(first.gates[index - 1].position, first.gates[index].position), Is.GreaterThan(15f));
+                Assert.That(Vector3.Distance(first.gates[index - 1].position, first.gates[index].position), Is.GreaterThan(25f));
+                Assert.That(first.gates[index].radius, Is.GreaterThanOrEqualTo(9f));
             }
         }
 
@@ -47,7 +48,8 @@ namespace WaypointWings.Tests
             var layout = FlightCourseGenerator.Generate(challenge);
 
             Assert.That(challenge.stageKey, Is.EqualTo("skyway"));
-            Assert.That(layout.towers, Has.Count.EqualTo(22));
+            Assert.That(challenge.generationVersion, Is.EqualTo("wings-course-generator-v2"));
+            Assert.That(layout.towers, Has.Count.EqualTo(14));
             Assert.That(layout.islands, Is.Empty);
         }
     }

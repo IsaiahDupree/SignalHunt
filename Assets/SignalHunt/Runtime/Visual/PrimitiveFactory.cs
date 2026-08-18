@@ -20,7 +20,7 @@ namespace SignalHunt.Visual
             instance.GetComponent<Renderer>().sharedMaterial = material;
             if (!collider)
             {
-                Object.Destroy(instance.GetComponent<Collider>());
+                DisableAndDestroyCollider(instance);
             }
 
             return instance;
@@ -42,7 +42,7 @@ namespace SignalHunt.Visual
             instance.GetComponent<Renderer>().sharedMaterial = material;
             if (!collider)
             {
-                Object.Destroy(instance.GetComponent<Collider>());
+                DisableAndDestroyCollider(instance);
             }
 
             return instance;
@@ -64,7 +64,7 @@ namespace SignalHunt.Visual
             instance.GetComponent<Renderer>().sharedMaterial = material;
             if (!collider)
             {
-                Object.Destroy(instance.GetComponent<Collider>());
+                DisableAndDestroyCollider(instance);
             }
             return instance;
         }
@@ -85,9 +85,22 @@ namespace SignalHunt.Visual
             instance.GetComponent<Renderer>().sharedMaterial = material;
             if (!collider)
             {
-                Object.Destroy(instance.GetComponent<Collider>());
+                DisableAndDestroyCollider(instance);
             }
             return instance;
+        }
+
+        private static void DisableAndDestroyCollider(GameObject instance)
+        {
+            var primitiveCollider = instance.GetComponent<Collider>();
+            if (primitiveCollider == null)
+            {
+                return;
+            }
+            // Generated visuals and the player are created in the same frame. Disable first so the
+            // deferred Destroy cannot produce a one-frame physics collision that launches the player.
+            primitiveCollider.enabled = false;
+            Object.Destroy(primitiveCollider);
         }
     }
 }

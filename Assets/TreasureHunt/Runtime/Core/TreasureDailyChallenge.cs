@@ -5,6 +5,7 @@ namespace TreasureHunt.Core
 {
     public enum TreasureStage
     {
+        TreasureIsland,
         SunkenRuins,
         CrystalHollow
     }
@@ -14,12 +15,15 @@ namespace TreasureHunt.Core
         public static DailyChallenge ForUtcDate(DateTime utcDate, TreasureStage? forcedStage = null)
         {
             var date = utcDate.ToUniversalTime().Date;
-            var stage = forcedStage ?? (date.DayOfYear % 2 == 0 ? TreasureStage.SunkenRuins : TreasureStage.CrystalHollow);
+            var stage = forcedStage ?? TreasureStage.TreasureIsland;
+            var island = stage == TreasureStage.TreasureIsland;
             var ruins = stage == TreasureStage.SunkenRuins;
-            var stageKey = ruins ? "sunken-ruins" : "crystal-hollow";
-            var displayName = ruins ? "Sunken Ruins" : "Crystal Hollow";
-            var theme = ruins ? "jungle" : "luminous";
-            var template = ruins ? "treasure-sunken-ruins-v1" : "treasure-crystal-hollow-v1";
+            var stageKey = island ? "treasure-island" : ruins ? "sunken-ruins" : "crystal-hollow";
+            var displayName = island ? "Treasure Island" : ruins ? "Sunken Ruins" : "Crystal Hollow";
+            var theme = island ? "sunny-island" : ruins ? "jungle" : "luminous";
+            var template = island ? "treasure-island-trail-v2" : ruins
+                ? "treasure-sunken-ruins-v1"
+                : "treasure-crystal-hollow-v1";
             var dateKey = date.ToString("yyyy-MM-dd");
             var identity = $"{dateKey}|{DailyGameCatalog.TreasureHuntAppKey}|{stageKey}|{theme}|standard|{template}";
             var generationSeed = DailyChallenge.StableHash(identity);
@@ -35,12 +39,12 @@ namespace TreasureHunt.Core
                 theme = theme,
                 difficulty = "standard",
                 worldTemplate = template,
-                generationVersion = "treasure-world-generator-v1",
+                generationVersion = island ? "treasure-world-generator-v2" : "treasure-world-generator-v1",
                 stageKey = stageKey,
                 stageDisplayName = displayName,
                 displaySeed = displaySeed,
                 generationSeed = generationSeed,
-                collectibleCount = 12
+                collectibleCount = island ? 10 : 12
             };
         }
 
@@ -82,8 +86,9 @@ namespace TreasureHunt.Core
             }
             return arguments[marker + 1].ToLowerInvariant() switch
             {
-                "ruins" or "sunken-ruins" => TreasureStage.SunkenRuins,
-                "crystals" or "crystal-hollow" => TreasureStage.CrystalHollow,
+                "island" or "treasure-island" => TreasureStage.TreasureIsland,
+                "ruins" or "sunken-ruins" => TreasureStage.TreasureIsland,
+                "crystals" or "crystal-hollow" => TreasureStage.TreasureIsland,
                 _ => null
             };
         }

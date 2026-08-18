@@ -261,48 +261,38 @@ namespace WaypointRally
             camera.nearClipPlane = 0.08f;
             camera.farClipPlane = 520f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = challenge.stageKey == "harbor-town"
-                ? new Color(0.35f, 0.72f, 0.91f)
-                : new Color(0.20f, 0.045f, 0.17f);
+            camera.backgroundColor = new Color(0.35f, 0.72f, 0.91f);
             var follow = instance.AddComponent<FollowCamera>();
-            follow.ConfigureGameplay(7.2f, 9.6f, 4.2f, 3.0f, 61f, 74f, 30f);
+            follow.ConfigureGameplay(8.2f, 10.2f, 4.4f, 2.8f, 61f, 71f, 30f);
             follow.SetTarget(vehicle.transform);
             return follow;
         }
 
         private static void ConfigureRendering(DailyChallenge challenge)
         {
-            var town = challenge.stageKey == "harbor-town";
+            _ = challenge;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = town ? 0.0032f : 0.0042f;
-            RenderSettings.fogColor = town
-                ? new Color(0.62f, 0.79f, 0.89f)
-                : new Color(0.72f, 0.31f, 0.16f);
+            RenderSettings.fogDensity = 0.0026f;
+            RenderSettings.fogColor = new Color(0.68f, 0.84f, 0.91f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = town
-                ? new Color(0.64f, 0.82f, 0.98f)
-                : new Color(0.98f, 0.46f, 0.20f);
-            RenderSettings.ambientEquatorColor = town
-                ? new Color(0.43f, 0.58f, 0.65f)
-                : new Color(0.62f, 0.30f, 0.16f);
-            RenderSettings.ambientGroundColor = town
-                ? new Color(0.16f, 0.25f, 0.25f)
-                : new Color(0.31f, 0.18f, 0.10f);
+            RenderSettings.ambientSkyColor = new Color(0.68f, 0.86f, 0.98f);
+            RenderSettings.ambientEquatorColor = new Color(0.46f, 0.64f, 0.68f);
+            RenderSettings.ambientGroundColor = new Color(0.18f, 0.30f, 0.24f);
 
-            var sunObject = new GameObject(town ? "Harbor Sun" : "Dustlands Sunset");
+            var sunObject = new GameObject("Island Sun");
             var sun = sunObject.AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = town ? new Color(1f, 0.88f, 0.70f) : new Color(1f, 0.48f, 0.22f);
-            sun.intensity = town ? 1.35f : 1.5f;
+            sun.color = new Color(1f, 0.91f, 0.74f);
+            sun.intensity = 1.35f;
             sun.shadows = LightShadows.Soft;
-            sunObject.transform.rotation = Quaternion.Euler(town ? 42f : 24f, -35f, 0f);
+            sunObject.transform.rotation = Quaternion.Euler(46f, -35f, 0f);
 
             var rimObject = new GameObject("Rally Rim Light");
             var rim = rimObject.AddComponent<Light>();
             rim.type = LightType.Directional;
-            rim.color = town ? new Color(0.12f, 0.82f, 1f) : new Color(1f, 0.16f, 0.54f);
-            rim.intensity = 0.42f;
+            rim.color = new Color(0.12f, 0.82f, 1f);
+            rim.intensity = 0.32f;
             rim.shadows = LightShadows.None;
             rimObject.transform.rotation = Quaternion.Euler(28f, 142f, 0f);
         }

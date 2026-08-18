@@ -32,7 +32,6 @@ namespace SignalHunt.World
 
             GenerateHills(layout, random);
             GenerateRoad(layout, random);
-            GenerateRamps(layout, random);
             GenerateRelics(layout, challenge.collectibleCount, random);
             GenerateTrees(layout, random);
             GenerateRocks(layout, random);
@@ -76,15 +75,15 @@ namespace SignalHunt.World
 
         private static void GenerateHills(IslandLayout layout, DeterministicRandom random)
         {
-            for (var index = 0; index < 8; index++)
+            for (var index = 0; index < 5; index++)
             {
                 var angle = random.Range(0f, Mathf.PI * 2f);
                 var distance = random.Range(5f, 43f);
                 layout.hills.Add(new IslandHillDefinition
                 {
                     center = new Vector2(Mathf.Cos(angle) * distance, Mathf.Sin(angle) * distance),
-                    radius = random.Range(14f, 28f),
-                    height = random.Range(1.4f, 4.8f)
+                    radius = random.Range(18f, 30f),
+                    height = random.Range(0.8f, 2.2f)
                 });
             }
         }
@@ -97,7 +96,7 @@ namespace SignalHunt.World
             for (var index = 0; index < controlCount; index++)
             {
                 var angle = -Mathf.PI * 0.5f + index * Mathf.PI * 2f / controlCount;
-                var radius = index == 0 ? 51f : random.Range(35f, 54f);
+                var radius = index == 0 ? 48f : random.Range(43f, 51f);
                 var x = Mathf.Cos(angle) * radius;
                 var z = Mathf.Sin(angle) * radius;
                 controls.Add(new Vector3(x, SampleHeight(layout, x, z) + 0.18f, z));
@@ -153,7 +152,7 @@ namespace SignalHunt.World
                 var next = layout.roadPoints[(roadIndex + 1) % layout.roadPoints.Count];
                 var tangent = (next - point).normalized;
                 var normal = new Vector3(-tangent.z, 0f, tangent.x);
-                var offset = index % 3 == 0 ? random.Range(7f, 11f) * (index % 2 == 0 ? 1f : -1f) : random.Range(-2.2f, 2.2f);
+                var offset = random.Range(-1.4f, 1.4f);
                 var position = point + normal * offset;
                 position.y = SampleHeight(layout, position.x, position.z) + 1.25f;
                 layout.relics.Add(new RelicDefinition
@@ -169,12 +168,12 @@ namespace SignalHunt.World
         private static void GenerateTrees(IslandLayout layout, DeterministicRandom random)
         {
             var attempts = 0;
-            while (layout.trees.Count < 86 && attempts++ < 1200)
+            while (layout.trees.Count < 58 && attempts++ < 900)
             {
                 var angle = random.Range(0f, Mathf.PI * 2f);
                 var distance = Mathf.Sqrt(random.NextFloat()) * 65f;
                 var position = new Vector3(Mathf.Cos(angle) * distance, 0f, Mathf.Sin(angle) * distance);
-                if (DistanceToRoad(layout.roadPoints, position) < 6.3f ||
+                if (DistanceToRoad(layout.roadPoints, position) < 8.5f ||
                     Vector3.Distance(position, layout.playerSpawn) < 10f ||
                     layout.relics.Exists(relic => Vector3.Distance(position, relic.position) < 4f))
                 {
@@ -194,12 +193,12 @@ namespace SignalHunt.World
         private static void GenerateRocks(IslandLayout layout, DeterministicRandom random)
         {
             var attempts = 0;
-            while (layout.rocks.Count < 28 && attempts++ < 500)
+            while (layout.rocks.Count < 16 && attempts++ < 400)
             {
                 var angle = random.Range(0f, Mathf.PI * 2f);
                 var distance = Mathf.Sqrt(random.NextFloat()) * 67f;
                 var position = new Vector3(Mathf.Cos(angle) * distance, 0f, Mathf.Sin(angle) * distance);
-                if (DistanceToRoad(layout.roadPoints, position) < 4.8f)
+                if (DistanceToRoad(layout.roadPoints, position) < 7.5f)
                 {
                     continue;
                 }

@@ -258,9 +258,7 @@ namespace WaypointWings
             camera.nearClipPlane = 0.08f;
             camera.farClipPlane = 900f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = challenge.stageKey == "archipelago"
-                ? new Color(0.33f, 0.67f, 0.88f)
-                : new Color(0.025f, 0.04f, 0.13f);
+            camera.backgroundColor = new Color(0.38f, 0.72f, 0.92f);
             var follow = instance.AddComponent<FollowCamera>();
             follow.ConfigureGameplay(10.5f, 14f, 5.2f, 6.5f, 64f, 77f, 46f);
             follow.SetSpeedProvider(() => aircraft.Speed);
@@ -270,37 +268,29 @@ namespace WaypointWings
 
         private static void ConfigureRendering(DailyChallenge challenge)
         {
-            var archipelago = challenge.stageKey == "archipelago";
+            _ = challenge;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = archipelago ? 0.0015f : 0.0025f;
-            RenderSettings.fogColor = archipelago
-                ? new Color(0.72f, 0.84f, 0.91f)
-                : new Color(0.04f, 0.08f, 0.20f);
+            RenderSettings.fogDensity = 0.0013f;
+            RenderSettings.fogColor = new Color(0.76f, 0.88f, 0.94f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = archipelago
-                ? new Color(0.68f, 0.82f, 0.96f)
-                : new Color(0.18f, 0.27f, 0.55f);
-            RenderSettings.ambientEquatorColor = archipelago
-                ? new Color(0.62f, 0.55f, 0.42f)
-                : new Color(0.08f, 0.12f, 0.28f);
-            RenderSettings.ambientGroundColor = archipelago
-                ? new Color(0.20f, 0.28f, 0.25f)
-                : new Color(0.02f, 0.025f, 0.08f);
+            RenderSettings.ambientSkyColor = new Color(0.72f, 0.86f, 0.98f);
+            RenderSettings.ambientEquatorColor = new Color(0.66f, 0.60f, 0.48f);
+            RenderSettings.ambientGroundColor = new Color(0.22f, 0.32f, 0.27f);
 
-            var sunObject = new GameObject(archipelago ? "Sunrise Key Light" : "Skyway Moon Light");
+            var sunObject = new GameObject("Island Sun");
             var sun = sunObject.AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = archipelago ? new Color(1f, 0.78f, 0.48f) : new Color(0.42f, 0.62f, 1f);
-            sun.intensity = archipelago ? 1.35f : 1.15f;
+            sun.color = new Color(1f, 0.86f, 0.62f);
+            sun.intensity = 1.35f;
             sun.shadows = LightShadows.Soft;
             sunObject.transform.rotation = Quaternion.Euler(38f, -34f, 0f);
 
             var rimObject = new GameObject("Flight Rim Light");
             var rim = rimObject.AddComponent<Light>();
             rim.type = LightType.Directional;
-            rim.color = archipelago ? new Color(0.22f, 0.78f, 1f) : new Color(1f, 0.18f, 0.72f);
-            rim.intensity = 0.38f;
+            rim.color = new Color(0.22f, 0.78f, 1f);
+            rim.intensity = 0.30f;
             rim.shadows = LightShadows.None;
             rimObject.transform.rotation = Quaternion.Euler(26f, 145f, 0f);
         }

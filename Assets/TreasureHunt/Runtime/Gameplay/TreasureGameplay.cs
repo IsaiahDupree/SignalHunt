@@ -26,6 +26,7 @@ namespace TreasureHunt.Gameplay
         private static bool _run;
         private static bool _scan;
         private static float _touchTurn;
+        private static float _touchForward;
 
         public static float Turn
         {
@@ -36,10 +37,17 @@ namespace TreasureHunt.Gameplay
                 return Mathf.Abs(digital) > 0.01f ? Mathf.Clamp(digital, -1f, 1f) : _touchTurn;
             }
         }
-        public static bool Running => Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || _run;
+        public static bool Running => Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || _run ||
+                                      _touchForward > 0.12f;
         public static bool Scanning => Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.E) || _scan;
 
         public static void SetTurn(float value) => _touchTurn = Mathf.Clamp(value, -1f, 1f);
+
+        public static void SetMove(Vector2 value)
+        {
+            _touchTurn = Mathf.Clamp(value.x, -1f, 1f);
+            _touchForward = Mathf.Clamp01(value.y);
+        }
 
         public static void Set(ExplorerControl control, bool pressed)
         {
@@ -56,6 +64,7 @@ namespace TreasureHunt.Gameplay
         {
             _left = _right = _run = _scan = false;
             _touchTurn = 0f;
+            _touchForward = 0f;
         }
     }
 

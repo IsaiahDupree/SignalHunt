@@ -262,9 +262,7 @@ namespace TreasureHunt
             camera.nearClipPlane = 0.08f;
             camera.farClipPlane = 520f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = challenge.stageKey == "sunken-ruins"
-                ? new Color(0.31f, 0.67f, 0.82f)
-                : new Color(0.025f, 0.025f, 0.10f);
+            camera.backgroundColor = new Color(0.31f, 0.67f, 0.82f);
             var follow = instance.AddComponent<FollowCamera>();
             follow.ConfigureGameplay(6.4f, 7.6f, 3.8f, 2.1f, 60f, 67f, 9.2f);
             follow.SetSpeedProvider(() => explorer.Speed);
@@ -274,37 +272,29 @@ namespace TreasureHunt
 
         private static void ConfigureRendering(DailyChallenge challenge)
         {
-            var ruins = challenge.stageKey == "sunken-ruins";
+            _ = challenge;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = ruins ? 0.0032f : 0.0048f;
-            RenderSettings.fogColor = ruins
-                ? new Color(0.48f, 0.72f, 0.70f)
-                : new Color(0.055f, 0.045f, 0.16f);
+            RenderSettings.fogDensity = 0.0028f;
+            RenderSettings.fogColor = new Color(0.56f, 0.78f, 0.76f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = ruins
-                ? new Color(0.55f, 0.82f, 0.72f)
-                : new Color(0.16f, 0.15f, 0.42f);
-            RenderSettings.ambientEquatorColor = ruins
-                ? new Color(0.32f, 0.48f, 0.32f)
-                : new Color(0.12f, 0.08f, 0.28f);
-            RenderSettings.ambientGroundColor = ruins
-                ? new Color(0.09f, 0.24f, 0.12f)
-                : new Color(0.025f, 0.02f, 0.07f);
+            RenderSettings.ambientSkyColor = new Color(0.62f, 0.86f, 0.78f);
+            RenderSettings.ambientEquatorColor = new Color(0.36f, 0.54f, 0.36f);
+            RenderSettings.ambientGroundColor = new Color(0.10f, 0.27f, 0.14f);
 
-            var sunObject = new GameObject(ruins ? "Ruins Sun" : "Crystal Moon");
+            var sunObject = new GameObject("Treasure Island Sun");
             var sun = sunObject.AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = ruins ? new Color(1f, 0.84f, 0.58f) : new Color(0.36f, 0.52f, 1f);
-            sun.intensity = ruins ? 1.35f : 1.1f;
+            sun.color = new Color(1f, 0.88f, 0.66f);
+            sun.intensity = 1.35f;
             sun.shadows = LightShadows.Soft;
-            sunObject.transform.rotation = Quaternion.Euler(ruins ? 42f : 31f, -38f, 0f);
+            sunObject.transform.rotation = Quaternion.Euler(46f, -38f, 0f);
 
             var rimObject = new GameObject("Treasure Rim Light");
             var rim = rimObject.AddComponent<Light>();
             rim.type = LightType.Directional;
-            rim.color = ruins ? new Color(0.12f, 0.90f, 1f) : new Color(1f, 0.14f, 0.68f);
-            rim.intensity = 0.48f;
+            rim.color = new Color(0.12f, 0.90f, 1f);
+            rim.intensity = 0.34f;
             rim.shadows = LightShadows.None;
             rimObject.transform.rotation = Quaternion.Euler(24f, 145f, 0f);
         }

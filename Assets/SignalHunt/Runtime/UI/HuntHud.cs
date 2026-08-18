@@ -116,7 +116,7 @@ namespace SignalHunt.UI
             }
 
             var builder = new StringBuilder();
-            var count = Mathf.Min(5, entries.Length);
+            var count = Mathf.Min(3, entries.Length);
             for (var index = 0; index < count; index++)
             {
                 var entry = entries[index];
@@ -172,14 +172,10 @@ namespace SignalHunt.UI
             var topPanel = Panel("Daily Challenge", safe, new Vector2(0.045f, 0.865f), new Vector2(0.955f, 0.972f), PanelColor);
             var accent = Panel("Header Accent", topPanel, new Vector2(0f, 0.12f), new Vector2(0.012f, 0.88f), Cyan);
             accent.GetComponent<Image>().raycastTarget = false;
-            Text("SIGNAL HUNT", topPanel, new Vector2(0.05f, 0.50f), new Vector2(0.56f, 0.91f), 44, FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
-            Text($"{challenge.stageDisplayName.ToUpperInvariant()} · {challenge.dateKey} · {challenge.displaySeed:D5}", topPanel,
-                new Vector2(0.05f, 0.13f), new Vector2(0.65f, 0.50f), 22, FontStyle.Normal,
-                MutedText, TextAnchor.MiddleLeft);
-            _timeText = Text("00:00.000", topPanel, new Vector2(0.59f, 0.52f), new Vector2(0.94f, 0.90f),
+            _relicText = Text("0 / 10 SIGNALS", topPanel, new Vector2(0.05f, 0.16f), new Vector2(0.48f, 0.84f),
+                30, FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
+            _timeText = Text("00:00.000", topPanel, new Vector2(0.52f, 0.16f), new Vector2(0.94f, 0.84f),
                 40, FontStyle.Bold, Color.white, TextAnchor.MiddleRight);
-            _relicText = Text("0 / 10 SIGNALS", topPanel, new Vector2(0.60f, 0.12f), new Vector2(0.94f, 0.48f),
-                23, FontStyle.Bold, Magenta, TextAnchor.MiddleRight);
 
             var progressTrack = Panel("Signal Progress", safe, new Vector2(0.075f, 0.852f), new Vector2(0.925f, 0.858f),
                 new Color(0.15f, 0.20f, 0.31f, 0.9f));
@@ -189,11 +185,9 @@ namespace SignalHunt.UI
                 72, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
             _statusText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
-            var targetPanel = Panel("Target Compass", safe, new Vector2(0.05f, 0.792f), new Vector2(0.71f, 0.837f), PanelColor);
+            var targetPanel = Panel("Target Compass", safe, new Vector2(0.05f, 0.792f), new Vector2(0.95f, 0.837f), PanelColor);
             _targetText = Text("SCANNING FOR SIGNAL…", targetPanel, new Vector2(0.05f, 0f), new Vector2(0.95f, 1f),
                 23, FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
-            ActionButton("COLOR", safe, new Vector2(0.74f, 0.792f), new Vector2(0.95f, 0.837f), Magenta,
-                () => StyleRequested?.Invoke());
 
             _controls = new GameObject("Touch Controls");
             var controlsRect = _controls.AddComponent<RectTransform>();
@@ -202,11 +196,9 @@ namespace SignalHunt.UI
             controlsRect.anchorMax = new Vector2(1f, 0.285f);
             controlsRect.offsetMin = controlsRect.offsetMax = Vector2.zero;
             SteeringPad(controlsRect, Cyan);
-            ControlButton("BRAKE", controlsRect, new Vector2(0.54f, 0.16f), new Vector2(0.72f, 0.62f),
+            ControlButton("BRAKE", controlsRect, new Vector2(0.72f, 0.12f), new Vector2(0.96f, 0.78f),
                 VehicleControl.Brake, Magenta);
-            ControlButton("THRUST", controlsRect, new Vector2(0.75f, 0.10f), new Vector2(0.96f, 0.78f),
-                VehicleControl.Accelerate, Cyan);
-            Text("DRAG TO STEER  ·  HOLD TO DRIVE", controlsRect, new Vector2(0.05f, 0.88f),
+            Text("AUTO-DRIVE  ·  STEER  ·  BRAKE", controlsRect, new Vector2(0.05f, 0.88f),
                 new Vector2(0.95f, 0.98f), 19, FontStyle.Bold, MutedText, TextAnchor.MiddleCenter).raycastTarget = false;
 
             BuildResultPanel(safe);
@@ -229,11 +221,7 @@ namespace SignalHunt.UI
             _networkStatus = Text(string.Empty, rect, new Vector2(0.08f, 0.24f), new Vector2(0.92f, 0.31f),
                 18, FontStyle.Normal, new Color(0.68f, 0.75f, 0.85f), TextAnchor.MiddleCenter);
 
-            ActionButton("WATCH / SHARE", rect, new Vector2(0.06f, 0.12f), new Vector2(0.48f, 0.23f), Cyan,
-                () => ExportRequested?.Invoke());
-            ActionButton("DAILY FILM", rect, new Vector2(0.52f, 0.12f), new Vector2(0.94f, 0.23f), Cyan,
-                () => MontageRequested?.Invoke());
-            ActionButton("RACE AGAIN", rect, new Vector2(0.06f, 0.025f), new Vector2(0.94f, 0.105f), Magenta,
+            ActionButton("PLAY AGAIN", rect, new Vector2(0.06f, 0.045f), new Vector2(0.94f, 0.19f), Magenta,
                 () => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex));
             _resultPanel.SetActive(false);
         }
@@ -319,7 +307,7 @@ namespace SignalHunt.UI
 
         private void SteeringPad(Transform parent, Color color)
         {
-            var pad = Panel("Steering Pad", parent, new Vector2(0.04f, 0.10f), new Vector2(0.48f, 0.83f),
+            var pad = Panel("Steering Pad", parent, new Vector2(0.04f, 0.10f), new Vector2(0.64f, 0.83f),
                 new Color(PanelColor.r, PanelColor.g, PanelColor.b, 0.78f));
             var outline = pad.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(color.r, color.g, color.b, 0.72f);

@@ -16,11 +16,11 @@ namespace SignalHunt.Tests
         {
             var challenge = DailyChallenge.ForUtcDate(new DateTime(2026, 8, 15, 18, 42, 0, DateTimeKind.Utc));
 
-            Assert.That(challenge.challengeId, Is.EqualTo("2026-08-15_city_neon_standard_seed_95713"));
-            Assert.That(challenge.generationSeed, Is.EqualTo(3582895713u));
-            Assert.That(challenge.Stage, Is.EqualTo(WorldStage.City));
-            Assert.That(challenge.worldTemplate, Is.EqualTo("synthetic-town-v1"));
-            Assert.That(challenge.generationVersion, Is.EqualTo("town-generator-v1"));
+            Assert.That(challenge.challengeId, Is.EqualTo("2026-08-15_island_sunny-island_standard_seed_10874"));
+            Assert.That(challenge.generationSeed, Is.EqualTo(230910874u));
+            Assert.That(challenge.Stage, Is.EqualTo(WorldStage.Island));
+            Assert.That(challenge.worldTemplate, Is.EqualTo("signal-island-adventure-v2"));
+            Assert.That(challenge.generationVersion, Is.EqualTo("island-generator-v2"));
             Assert.That(challenge.appKey, Is.EqualTo("signal-hunt"));
             Assert.That(challenge.season, Is.EqualTo("summer"));
             Assert.That(challenge.collectibleCount, Is.EqualTo(10));
@@ -31,12 +31,12 @@ namespace SignalHunt.Tests
         {
             var challenge = DailyChallenge.ForUtcDate(new DateTime(2026, 8, 16, 12, 0, 0, DateTimeKind.Utc));
 
-            Assert.That(challenge.challengeId, Is.EqualTo("2026-08-16_island_coastal_standard_seed_62010"));
-            Assert.That(challenge.generationSeed, Is.EqualTo(924762010u));
+            Assert.That(challenge.challengeId, Is.EqualTo("2026-08-16_island_sunny-island_standard_seed_79579"));
+            Assert.That(challenge.generationSeed, Is.EqualTo(3875379579u));
             Assert.That(challenge.Stage, Is.EqualTo(WorldStage.Island));
-            Assert.That(challenge.worldTemplate, Is.EqualTo("synthetic-island-v1"));
-            Assert.That(challenge.generationVersion, Is.EqualTo("island-generator-v1"));
-            Assert.That(challenge.stageDisplayName, Is.EqualTo("Emerald Isle"));
+            Assert.That(challenge.worldTemplate, Is.EqualTo("signal-island-adventure-v2"));
+            Assert.That(challenge.generationVersion, Is.EqualTo("island-generator-v2"));
+            Assert.That(challenge.stageDisplayName, Is.EqualTo("Signal Island"));
         }
 
         [Test]
@@ -48,12 +48,14 @@ namespace SignalHunt.Tests
 
             Assert.That(JsonUtility.ToJson(first), Is.EqualTo(JsonUtility.ToJson(second)));
             Assert.That(first.roadPoints, Has.Count.EqualTo(84));
-            Assert.That(first.trees, Has.Count.EqualTo(86));
+            Assert.That(first.trees, Has.Count.EqualTo(58));
             Assert.That(first.relics, Has.Count.EqualTo(10));
+            Assert.That(first.ramps, Is.Empty);
             Assert.That(first.playerSpawn.y, Is.GreaterThan(first.waterLevel));
             foreach (var relic in first.relics)
             {
                 Assert.That(relic.position.y, Is.GreaterThan(first.waterLevel + 0.5f));
+                Assert.That(IslandLayoutGenerator.DistanceToRoad(first.roadPoints, relic.position), Is.LessThan(2f));
             }
         }
 
@@ -62,19 +64,20 @@ namespace SignalHunt.Tests
         {
             var date = new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Utc);
             var automatic = DailyChallenge.ForUtcDate(date);
-            var island = DailyChallenge.ForUtcDate(date, WorldStage.Island);
+            var legacyCity = DailyChallenge.ForUtcDate(date, WorldStage.City);
 
-            Assert.That(automatic.Stage, Is.EqualTo(WorldStage.City));
-            Assert.That(island.Stage, Is.EqualTo(WorldStage.Island));
-            Assert.That(island.dateKey, Is.EqualTo(automatic.dateKey));
-            Assert.That(island.collectibleCount, Is.EqualTo(automatic.collectibleCount));
-            Assert.That(island.challengeId, Is.Not.EqualTo(automatic.challengeId));
+            Assert.That(automatic.Stage, Is.EqualTo(WorldStage.Island));
+            Assert.That(legacyCity.Stage, Is.EqualTo(WorldStage.City));
+            Assert.That(legacyCity.dateKey, Is.EqualTo(automatic.dateKey));
+            Assert.That(legacyCity.collectibleCount, Is.EqualTo(automatic.collectibleCount));
+            Assert.That(legacyCity.challengeId, Is.Not.EqualTo(automatic.challengeId));
         }
 
         [Test]
         public void GeneratorIsDeterministicAndPlacesTenSeparatedRelics()
         {
-            var challenge = DailyChallenge.ForUtcDate(new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Utc));
+            var challenge = DailyChallenge.ForUtcDate(new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Utc),
+                WorldStage.City);
             var first = TownLayoutGenerator.Generate(challenge);
             var second = TownLayoutGenerator.Generate(challenge);
 
@@ -183,8 +186,9 @@ namespace SignalHunt.Tests
 
             Assert.That(content.title, Is.EqualTo("WAYPOINT WINGS"));
             Assert.That(content.itemSummary, Is.EqualTo("14 AIR GATES"));
-            Assert.That(content.primaryAction, Is.EqualTo("TAKE FLIGHT"));
-            Assert.That(content.socialHook, Does.Contain("shared flight film"));
+            Assert.That(content.primaryAction, Is.EqualTo("PLAY"));
+            Assert.That(content.controls, Is.EqualTo("DRAG TO FLY  ·  HOLD BOOST"));
+            Assert.That(content.socialHook, Does.Contain("respawn automatically"));
         }
 
         [Test]

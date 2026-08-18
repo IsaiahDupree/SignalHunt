@@ -11,14 +11,27 @@ namespace TreasureHunt.World
             GamePalette palette, Func<string, bool> onArtifactFound)
         {
             var root = new GameObject("Daily Treasure World");
-            var ruins = challenge.stageKey == "sunken-ruins";
-            PrimitiveFactory.Cube(ruins ? "Ruins Ground" : "Crystal Ground", root.transform,
-                new Vector3(0f, -0.65f, 0f), new Vector3(190f, 1.2f, 190f),
-                ruins ? palette.GrassMaterials[3] : palette.DarkMetal);
-            if (ruins)
+            var island = challenge.stageKey == "treasure-island";
+            var ruins = island || challenge.stageKey == "sunken-ruins";
+            if (island)
             {
-                PrimitiveFactory.Cube("Ruins Lagoon", root.transform, new Vector3(-91f, -0.8f, 0f),
-                    new Vector3(16f, 0.6f, 190f), palette.Water, false);
+                PrimitiveFactory.Cube("Treasure Island Water", root.transform, new Vector3(0f, -1.25f, 0f),
+                    new Vector3(300f, 0.7f, 300f), palette.Water, false);
+                PrimitiveFactory.Cylinder("Treasure Island Sand", root.transform, new Vector3(0f, -0.72f, 0f),
+                    new Vector3(190f, 0.7f, 190f), palette.SandMaterials[0]);
+                PrimitiveFactory.Cylinder("Treasure Island Grass", root.transform, new Vector3(0f, -0.42f, 0f),
+                    new Vector3(176f, 0.62f, 176f), palette.GrassMaterials[3]);
+            }
+            else
+            {
+                PrimitiveFactory.Cube(ruins ? "Ruins Ground" : "Crystal Ground", root.transform,
+                    new Vector3(0f, -0.65f, 0f), new Vector3(190f, 1.2f, 190f),
+                    ruins ? palette.GrassMaterials[3] : palette.DarkMetal);
+                if (ruins)
+                {
+                    PrimitiveFactory.Cube("Ruins Lagoon", root.transform, new Vector3(-91f, -0.8f, 0f),
+                        new Vector3(16f, 0.6f, 190f), palette.Water, false);
+                }
             }
 
             foreach (var path in layout.paths)

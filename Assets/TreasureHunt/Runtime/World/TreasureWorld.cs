@@ -75,16 +75,112 @@ namespace TreasureHunt.World
                 playerSpawn = new Vector3(0f, 1.1f, -78f),
                 playerHeading = 0f
             };
-            GenerateArtifacts(layout, random);
-            if (challenge.stageKey == "sunken-ruins")
+            if (challenge.stageKey == "treasure-island")
             {
-                GenerateRuins(layout, random);
+                GenerateIslandAdventure(layout, challenge.collectibleCount, random);
             }
             else
             {
-                GenerateCrystalHollow(layout, random);
+                GenerateArtifacts(layout, random);
+                if (challenge.stageKey == "sunken-ruins")
+                {
+                    GenerateRuins(layout, random);
+                }
+                else
+                {
+                    GenerateCrystalHollow(layout, random);
+                }
             }
             return layout;
+        }
+
+        private static void GenerateIslandAdventure(TreasureWorldLayout layout, int count,
+            DeterministicRandom random)
+        {
+            layout.playerSpawn = new Vector3(0f, 1.1f, -68f);
+            layout.playerHeading = 0f;
+            for (var index = 0; index < count; index++)
+            {
+                var angle = -Mathf.PI * 0.5f + index * Mathf.PI * 2f / count;
+                var radius = 47f + random.Range(-2f, 2f);
+                layout.artifacts.Add(new TreasureArtifactDefinition
+                {
+                    id = $"artifact-{index + 1:D2}",
+                    position = new Vector3(Mathf.Cos(angle) * radius, 0.8f, Mathf.Sin(angle) * radius),
+                    styleIndex = index % 4
+                });
+            }
+            layout.paths.Add(new TreasurePathDefinition
+            {
+                start = new Vector3(layout.playerSpawn.x, 0f, layout.playerSpawn.z),
+                end = new Vector3(layout.artifacts[0].position.x, 0f, layout.artifacts[0].position.z),
+                width = 6.5f
+            });
+            for (var index = 0; index < layout.artifacts.Count; index++)
+            {
+                var start = layout.artifacts[index].position;
+                var end = layout.artifacts[(index + 1) % layout.artifacts.Count].position;
+                start.y = end.y = 0f;
+                layout.paths.Add(new TreasurePathDefinition { start = start, end = end, width = 6.5f });
+            }
+            AddArtifactCover(layout, random, TreasurePropKind.Ruin);
+            AddIslandProps(layout, random, TreasurePropKind.Tree, 28, 1.4f, 2.6f, 3.5f, 7f);
+            AddIslandProps(layout, random, TreasurePropKind.Rock, 12, 0.8f, 1.8f, 0.6f, 1.5f);
+            for (var index = 0; index < 16; index++)
+            {
+                layout.patches.Add(new TreasureGroundPatch
+                {
+                    position = new Vector3(random.Range(-72f, 72f), 0f, random.Range(-72f, 72f)),
+                    scale = new Vector3(random.Range(6f, 14f), 0.08f, random.Range(6f, 14f)),
+                    styleIndex = random.Range(0, 4)
+                });
+            }
+        }
+
+        private static void AddIslandProps(TreasureWorldLayout layout, DeterministicRandom random,
+            TreasurePropKind kind, int count, float minimumWidth, float maximumWidth, float minimumHeight,
+            float maximumHeight)
+        {
+            for (var index = 0; index < count; index++)
+            {
+                Vector3 position = default;
+                for (var attempt = 0; attempt < 96; attempt++)
+                {
+                    position = new Vector3(random.Range(-78f, 78f), 0f, random.Range(-78f, 78f));
+                    if (Vector3.Distance(position, layout.playerSpawn) > 9f &&
+                        IsClearOfArtifacts(position, layout.artifacts, 7f) &&
+                        DistanceToPaths(position, layout.paths) > 6f)
+                    {
+                        break;
+                    }
+                }
+                layout.props.Add(new TreasurePropDefinition
+                {
+                    kind = kind,
+                    position = position,
+                    scale = new Vector3(random.Range(minimumWidth, maximumWidth),
+                        random.Range(minimumHeight, maximumHeight), random.Range(minimumWidth, maximumWidth)),
+                    heading = random.Range(0f, 360f),
+                    styleIndex = random.Range(0, 4)
+                });
+            }
+        }
+
+        private static float DistanceToPaths(Vector3 position, IReadOnlyList<TreasurePathDefinition> paths)
+        {
+            var best = float.MaxValue;
+            position.y = 0f;
+            foreach (var path in paths)
+            {
+                var start = path.start;
+                var end = path.end;
+                start.y = end.y = 0f;
+                var segment = end - start;
+                var progress = Mathf.Clamp01(Vector3.Dot(position - start, segment) /
+                                             Mathf.Max(0.001f, segment.sqrMagnitude));
+                best = Mathf.Min(best, Vector3.Distance(position, start + segment * progress));
+            }
+            return best;
         }
 
         private static void GenerateArtifacts(TreasureWorldLayout layout, DeterministicRandom random)

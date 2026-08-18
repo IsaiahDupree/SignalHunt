@@ -4,10 +4,10 @@ This public repository contains four compact daily challenge games for iOS. Ever
 
 The app network shares the daily-seed, identity, cosmetics, backend, leaderboard, replay, and Daily Film engine while shipping as separate Unity scenes and products:
 
-- **Signal Hunt** — playable; find hidden relics in a rotating daily world.
-- **Waypoint Wings** — playable; fly through a vertical daily course.
-- **Waypoint Rally** — playable; choose the fastest route through ground checkpoints.
-- **Treasure Hunter** — playable; search on foot with a detector and secure 12 artifacts in any order.
+- **Signal Hunt** — find hidden signals while driving a compact daily island.
+- **Waypoint Wings** — fly a smooth gate course over a sunny archipelago.
+- **Waypoint Rally** — race the readable Palm Coast island loop.
+- **Treasure Hunter** — search a bright island trail for 10 artifacts in any order.
 
 ## Play Signal Hunt
 
@@ -15,50 +15,49 @@ Open this directory in Unity `6000.5.2f1`, open `Assets/SignalHunt/Scenes/Main.u
 
 Controls:
 
-- Touch: drag the steering pad for proportional turns; hold `THRUST` or `BRAKE` with the other thumb.
-- Keyboard: WASD or arrow keys.
-- `STYLE` cycles and persists the launch vehicle color.
+- Touch: the vehicle moves automatically; drag the steering pad and hold `BRAKE` when needed.
+- Keyboard: A/D or left/right steers, W accelerates, and S/reverse remains available.
 
-The run begins after a three-second countdown. Collect all ten signals; the result panel saves the attempt, shows the improvement against your daily best, syncs the live board when Supabase is configured, and offers `RACE AGAIN`, `WATCH / SHARE`, and `DAILY FILM`.
+The run begins after a three-second countdown. Collect all ten signals; the result panel saves the attempt, shows the improvement against your daily best, syncs the live board when Supabase is configured, and presents one clear action: `PLAY AGAIN`.
 
-Before the countdown, every app now opens through the same programmatic startup experience with app-specific art direction. An animated seed loader introduces the shared daily world, followed by a home menu over a live cinematic flyover of that exact generated map. The menu explains today's objective and controls, shows the exact stage/seed/reset time, displays only the player's real local attempts and personal best, offers player color selection and how-to-play, and unlocks Daily Film preview after the first saved run. The moving backdrop is rendered from the daily world in real time, so it needs no bundled video and cannot drift from the playable seed.
+Every app opens with the same deliberately sparse flow: a short animated island loader, then a single `PLAY` button over a live cinematic flyover of that day's exact generated world. One compact card states the goal, item count, control gesture, and local best. Seed details, capture tools, replay production, and social-film assembly remain automated infrastructure and are not exposed as player-facing menu buttons. The backdrop is rendered from the playable daily world in real time, so it needs no bundled video and cannot drift from the active seed.
 
 ## Play Waypoint Wings
 
-Open `Assets/WaypointWings/Scenes/Main.unity` and press Play. Fly through all 14 gates in order with the two-axis flight stick: drag left/right to turn and up/down to climb or descend, then release to auto-level. Hold `BOOST` with the other thumb. Keyboard controls remain WASD/arrows plus Space. The UTC date alternates between the bright Sunrise Archipelago and Neon Skyway stages.
+Open `Assets/WaypointWings/Scenes/Main.unity` and press Play. Fly through 12 large gates in order with the two-axis flight stick: drag left/right to turn and up/down to climb or descend, then release to auto-level. Hold `BOOST` with the other thumb. Keyboard controls remain WASD/arrows plus Space. Every daily course is a bright Sunny Archipelago with a smoother line, gentler altitude changes, and islands kept clear of the intended route.
 
-Waypoint Wings records each flight at 10 Hz, plays personal-best and daily-leader aircraft ghosts, saves unlimited same-day attempts, and provides `WATCH FLIGHT`, `DAILY FILM`, and `FLY AGAIN` after every round. Its Daily Film reconstructs up to 16 real aircraft runs through cinematic chase, overhead, orbit, and wide cameras.
+Waypoint Wings uses slower cruise speed, responsive proportional steering, bounded pitch, and strong release-to-level assistance. Contact with terrain or leaving the course now triggers a short `CRASHED · RESTARTING` transition and automatically restarts the same attempt instead of leaving the plane stopped. Flights are still recorded at 10 Hz for personal-best ghosts and automated Daily Film production; the player sees only `PLAY AGAIN` after the round.
 
 ## Play Waypoint Rally
 
-Open `Assets/WaypointRally/Scenes/Main.unity` and press Play. Drive through all 10 checkpoints in order with proportional drag steering plus the large `THRUST` and `BRAKE` touch controls, or use the keyboard. The UTC date alternates between Turbo Harbor, with grid roads and diagonal shortcuts, and Dustlands Run, with open off-road terrain, rocks, cacti, and ramps.
+Open `Assets/WaypointRally/Scenes/Main.unity` and press Play. The car moves automatically; drag the steering pad and hold `BRAKE` when needed. Race through 10 wide checkpoints on the sunny Palm Coast Loop. The deterministic course uses a smooth paved island ring, generous road width, clear checkpoint order, and decorative palms outside the racing line.
 
-Waypoint Rally saves unlimited attempts, reconstructs personal-best and daily-leader car ghosts, and provides `WATCH RACE`, `DAILY FILM`, and `RACE AGAIN` after every round. Players share the checkpoint order while remaining free to discover a faster line between checkpoints.
+Waypoint Rally saves unlimited attempts and reconstructs personal-best and daily-leader car ghosts behind the scenes. The finish screen has one `PLAY AGAIN` action; automated replay and Daily Film systems can still assemble the day's community runs without adding menu complexity.
 
 ## Play Treasure Hunter
 
-Open `Assets/TreasureHunt/Scenes/Main.unity` and press Play. Explore on foot by dragging the turn pad and holding `RUN`; use `SCAN` to pulse nearby caches. Keyboard controls remain A/D, W, and Space/E. The detector reports the nearest unfound artifact's strength, distance, and relative bearing.
+Open `Assets/TreasureHunt/Scenes/Main.unity` and press Play. Drag the two-axis move pad to walk or run in any direction and tap `SCAN` to pulse nearby caches. Keyboard controls remain WASD/arrows and Space/E. The detector reports the nearest unfound artifact's strength, distance, and relative bearing.
 
-The UTC date alternates between the bright, overgrown Sunken Ruins and the nocturnal Crystal Hollow. Each programmatic world contains the same 12 safe, separated hiding locations for every player that day. Treasure Hunter records search routes at 10 Hz, reconstructs personal-best and daily-leader explorer ghosts, saves unlimited attempts, and offers `WATCH SEARCH`, `DAILY FILM`, and `HUNT AGAIN` after every round.
+Each programmatic Treasure Island contains the same 10 safe hiding locations for every player that day, arranged around a legible trail ring connected to the spawn point. Treasure Hunter records search routes at 10 Hz, reconstructs personal-best and daily-leader explorer ghosts, and saves unlimited attempts while exposing only `PLAY AGAIN` at the finish.
 
 ## What is implemented
 
 - Stable UTC daily challenge IDs and platform-independent xorshift generation.
-- Two rotating daily stages: the generated neon city and the low-poly Emerald Isle.
-- A fully programmatic island with faceted terrain, beaches, surrounding water, rolling hills, a closed rally road, ramps, pine trees, rocks, lighting, and ten safe/separated relics.
-- A generated neon town with roads, alleys, buildings, plazas, ramps, tunnel gates, lighting, and ten safe/separated relics.
+- Bright island-only production stages across all four apps; no night stage is selected by the daily challenge contract.
+- Fully programmatic archipelagos with beaches, surrounding water, readable loops and trails, restrained scenery, and deterministic safe collectible positions.
 - Physics hover-car controller with touch and keyboard input.
-- Shared proportional touch steering with large separated action buttons, persistent press capture, visible thumb feedback, and portrait safe-area placement across every app.
-- Timer, completion rules, deterministic scoring, player nameplate, and vehicle color selection.
+- Minimal touch controls with two player actions per app: steering plus brake, flight stick plus boost, or move pad plus scan.
+- A one-action startup menu and one-action result screen over the live daily-world flyover.
+- Timer, completion rules, deterministic scoring, and player nameplate.
 - Unlimited retries on the same daily seed, with durable local attempt history, attempt numbering, personal-best deltas, and best-ghost playback.
-- A real post-round top-five board showing each player's best run and total attempts; offline state is labeled honestly.
+- A compact post-round top-three board showing each player's best run and total attempts; offline state is labeled honestly.
 - 10 Hz replay snapshots with position, rotation, speed, vehicle state, collection markers, and camera events.
 - Local personal-best ghost playback and share-caption metadata.
 - Cinematic replay playback with orbit, chase, overhead, and wide camera cuts; iOS device builds use ReplayKit's native preview/save/share sheet.
 - A Daily Film director that reconstructs up to 16 real racers, time-compresses their routes, switches racers/angles every three seconds, and records a vertical social clip through ReplayKit.
-- A separate Waypoint Wings app shell with two deterministic vertical stages, a two-axis analog flight stick, smoothed steering, bounded pitch, release-to-auto-level assistance, live altitude/speed feedback, 14 ordered flight gates, aircraft ghosts, flight scoring, retry flow, and an aircraft-specific Daily Film.
-- A separate Waypoint Rally app shell with two deterministic ground stages, 10 ordered checkpoints, open route choice, a programmatic rally car, driver ghosts, scoring, retry flow, and a rally-specific Daily Film.
-- A separate Treasure Hunter app shell with two deterministic exploration stages, 12 any-order artifacts, an on-foot controller, directional detector, scan pulse, explorer ghosts, scoring, retry flow, and an explorer-specific Daily Film.
+- A Waypoint Wings shell with a sunny archipelago, analog flight stick, assisted controls, 12 large ordered gates, automatic crash restart, aircraft ghosts, scoring, retry flow, and aircraft-specific Daily Film automation.
+- A Waypoint Rally shell with a bright island loop, 10 ordered checkpoints, auto-drive, a programmatic rally car, driver ghosts, scoring, retry flow, and rally-specific Daily Film automation.
+- A Treasure Hunter shell with a readable island trail, 10 any-order artifacts, two-axis movement, directional detector, scan pulse, explorer ghosts, scoring, retry flow, and explorer-specific Daily Film automation.
 - Shared `appKey`/`modeKey` replay contracts and generic backend RPCs for Signal Hunt, Waypoint Rally, Waypoint Wings, and Treasure Hunter.
 - Supabase anonymous authentication, token refresh, challenge claiming, validated run submission, top-ten leaderboard, top ghost, profiles, cosmetics, and inventory schema.
 - Portrait safe-area HUD and an automated standalone visual smoke-capture mode.
@@ -143,7 +142,7 @@ Build the separate Waypoint Wings preview:
   -logFile Logs/mac-wings-build.log
 ```
 
-Use `--wings-stage archipelago` or `--wings-stage skyway` to inspect either deterministic flight stage in a development build.
+Use `--wings-stage archipelago` to pin the production island stage in a development build. Legacy stage names are accepted only as compatibility aliases and resolve to the archipelago.
 
 Build the separate Waypoint Rally preview:
 
@@ -154,7 +153,7 @@ Build the separate Waypoint Rally preview:
   -logFile Logs/mac-rally-build.log
 ```
 
-Use `--rally-stage town` or `--rally-stage dustlands` to inspect either deterministic ground-racing stage.
+Use `--rally-stage island` to pin the production Palm Coast Loop in a development build. Legacy ground-stage names resolve to this island course.
 
 Build the separate Treasure Hunter preview:
 
@@ -165,11 +164,11 @@ Build the separate Treasure Hunter preview:
   -logFile Logs/mac-treasure-build.log
 ```
 
-Use `--treasure-stage ruins` or `--treasure-stage crystals` to inspect either deterministic exploration stage. Automated visual checks can also pin a seed date with `--treasure-date YYYY-MM-DD`.
+Use `--treasure-stage island` to pin the production Treasure Island stage. Legacy exploration-stage names resolve to the island. Automated visual checks can also pin a seed date with `--treasure-date YYYY-MM-DD`.
 
 Programmatic startup visuals can be captured from standalone builds with `--treasure-capture-loading PATH` and `--treasure-capture-menu PATH`. The equivalent prefixes are `--signalhunt`, `--rally`, and `--wings` for the other app shells.
 
-The UTC daily challenge alternates stages automatically. To inspect a specific stage in a development build, add either `--signalhunt-stage city` or `--signalhunt-stage island` to the player command line.
+Production UTC challenges select the island stage automatically. Add `--signalhunt-stage island` to make that selection explicit in a development build; the legacy `city` alias also resolves to the island.
 
 Build the Xcode iOS project after installing Unity's iOS Build Support module:
 
@@ -199,16 +198,16 @@ UTC date + season + theme + difficulty + world template
 For example, `2026-08-15` produces:
 
 ```text
-2026-08-15_city_neon_standard_seed_95713
+2026-08-15_signal-island_sunny-island_standard_seed_95713
 ```
 
-The following day produces the shared island challenge:
+The following day produces a new shared island layout:
 
 ```text
-2026-08-16_island_coastal_standard_seed_62010
+2026-08-16_signal-island_sunny-island_standard_seed_62010
 ```
 
-Do not change `StableHash`, `DeterministicRandom`, or generator ordering inside an existing generation version. Ship intentional changes as a new world-template version, such as `synthetic-town-v2` or `synthetic-island-v2`, so stored ghosts remain reconstructable.
+Do not change `StableHash`, `DeterministicRandom`, or generator ordering inside an existing generation version. Ship intentional changes as a new world-template and generator version, such as `signal-island-adventure-v2` and `island-generator-v2`, so stored ghosts remain reconstructable.
 
 ## Repository map
 

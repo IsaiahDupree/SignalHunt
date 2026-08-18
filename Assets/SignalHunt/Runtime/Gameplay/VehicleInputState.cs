@@ -18,9 +18,8 @@ namespace SignalHunt.Gameplay
         private static bool _right;
         private static float _touchSteering;
 
-        public static float Throttle =>
-            Mathf.Clamp((IsKeyboardAccelerating() || _accelerate ? 1f : 0f) -
-                        (IsKeyboardBraking() || _brake ? 1f : 0f), -1f, 1f);
+        public static float Throttle => IsKeyboardBraking() ? -1f : 1f;
+        public static bool BrakeHeld => _brake;
 
         public static float Steering
         {
@@ -51,7 +50,6 @@ namespace SignalHunt.Gameplay
             _touchSteering = 0f;
         }
 
-        private static bool IsKeyboardAccelerating() => Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
         private static bool IsKeyboardBraking() => Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
         private static bool IsKeyboardLeft() => Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
         private static bool IsKeyboardRight() => Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);

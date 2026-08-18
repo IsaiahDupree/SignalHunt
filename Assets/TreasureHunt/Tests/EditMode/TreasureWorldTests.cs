@@ -17,14 +17,14 @@ namespace TreasureHunt.Tests
 
             Assert.That(challenge.appKey, Is.EqualTo(DailyGameCatalog.TreasureHuntAppKey));
             Assert.That(challenge.modeKey, Is.EqualTo("daily-treasure-hunt"));
-            Assert.That(challenge.stageKey, Is.EqualTo("sunken-ruins"));
-            Assert.That(challenge.worldTemplate, Is.EqualTo("treasure-sunken-ruins-v1"));
-            Assert.That(challenge.generationVersion, Is.EqualTo("treasure-world-generator-v1"));
-            Assert.That(challenge.collectibleCount, Is.EqualTo(12));
+            Assert.That(challenge.stageKey, Is.EqualTo("treasure-island"));
+            Assert.That(challenge.worldTemplate, Is.EqualTo("treasure-island-trail-v2"));
+            Assert.That(challenge.generationVersion, Is.EqualTo("treasure-world-generator-v2"));
+            Assert.That(challenge.collectibleCount, Is.EqualTo(10));
         }
 
         [Test]
-        public void RuinsAreDeterministicAndArtifactsAreSeparated()
+        public void IslandTrailIsDeterministicAndArtifactsFollowThePath()
         {
             var challenge = TreasureDailyChallenge.ForUtcDate(
                 new DateTime(2026, 8, 16, 12, 0, 0, DateTimeKind.Utc));
@@ -32,15 +32,15 @@ namespace TreasureHunt.Tests
             var second = TreasureWorldGenerator.Generate(challenge);
 
             Assert.That(JsonUtility.ToJson(first), Is.EqualTo(JsonUtility.ToJson(second)));
-            Assert.That(first.artifacts, Has.Count.EqualTo(12));
-            Assert.That(first.paths, Has.Count.EqualTo(8));
-            Assert.That(first.patches, Has.Count.EqualTo(22));
+            Assert.That(first.artifacts, Has.Count.EqualTo(10));
+            Assert.That(first.paths, Has.Count.EqualTo(11));
+            Assert.That(first.patches, Has.Count.EqualTo(16));
             for (var index = 0; index < first.artifacts.Count; index++)
             {
                 for (var other = index + 1; other < first.artifacts.Count; other++)
                 {
                     Assert.That(Vector3.Distance(first.artifacts[index].position, first.artifacts[other].position),
-                        Is.GreaterThanOrEqualTo(15.9f));
+                        Is.GreaterThanOrEqualTo(20f));
                 }
             }
         }
