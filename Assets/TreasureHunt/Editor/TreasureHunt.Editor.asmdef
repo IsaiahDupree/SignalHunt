@@ -3,6 +3,7 @@
   "rootNamespace": "TreasureHunt.Editor",
   "references": [
     "SignalHunt.Runtime",
+    "SignalHunt.Editor",
     "TreasureHunt.Runtime"
   ],
   "includePlatforms": [

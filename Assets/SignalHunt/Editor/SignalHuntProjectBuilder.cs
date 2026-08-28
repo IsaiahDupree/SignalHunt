@@ -13,6 +13,7 @@ namespace SignalHunt.Editor
     {
         private const string MainScenePath = "Assets/SignalHunt/Scenes/Main.unity";
         private const string ConfigAssetPath = "Assets/Resources/SignalHuntRuntimeConfig.asset";
+        private const string AppIconPath = "Assets/Brand/AppIcons/SignalHunt.png";
 
         [MenuItem("Signal Hunt/Setup Project")]
         public static void SetupProject()
@@ -47,6 +48,7 @@ namespace SignalHunt.Editor
             PlayerSettings.allowedAutorotateToLandscapeLeft = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.colorSpace = ColorSpace.Linear;
+            BrandIconUtility.ApplyIosIcon(AppIconPath);
             EnsureRuntimeShaders();
             AssetDatabase.SaveAssets();
             Debug.Log("Signal Hunt project and Main scene configured.");

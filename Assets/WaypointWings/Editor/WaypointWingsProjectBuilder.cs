@@ -13,6 +13,7 @@ namespace WaypointWings.Editor
     {
         private const string MainScenePath = "Assets/WaypointWings/Scenes/Main.unity";
         private const string ConfigAssetPath = "Assets/Resources/SignalHuntRuntimeConfig.asset";
+        private const string AppIconPath = "Assets/Brand/AppIcons/WaypointWings.png";
 
         [MenuItem("Waypoint Wings/Setup Project")]
         public static void SetupProject()
@@ -46,6 +47,7 @@ namespace WaypointWings.Editor
             PlayerSettings.allowedAutorotateToLandscapeLeft = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.colorSpace = ColorSpace.Linear;
+            SignalHunt.Editor.BrandIconUtility.ApplyIosIcon(AppIconPath);
             EnsureRuntimeShaders();
             AssetDatabase.SaveAssets();
             Debug.Log("Waypoint Wings project and scene configured.");

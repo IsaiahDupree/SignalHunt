@@ -13,6 +13,7 @@ namespace TreasureHunt.Editor
     {
         private const string MainScenePath = "Assets/TreasureHunt/Scenes/Main.unity";
         private const string ConfigAssetPath = "Assets/Resources/SignalHuntRuntimeConfig.asset";
+        private const string AppIconPath = "Assets/Brand/AppIcons/TreasureHunter.png";
 
         [MenuItem("Treasure Hunter/Setup Project")]
         public static void SetupProject()
@@ -46,6 +47,7 @@ namespace TreasureHunt.Editor
             PlayerSettings.allowedAutorotateToLandscapeLeft = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.colorSpace = ColorSpace.Linear;
+            SignalHunt.Editor.BrandIconUtility.ApplyIosIcon(AppIconPath);
             EnsureRuntimeShaders();
             AssetDatabase.SaveAssets();
             Debug.Log("Treasure Hunter project and scene configured.");

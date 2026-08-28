@@ -13,6 +13,7 @@ namespace WaypointRally.Editor
     {
         private const string MainScenePath = "Assets/WaypointRally/Scenes/Main.unity";
         private const string ConfigAssetPath = "Assets/Resources/SignalHuntRuntimeConfig.asset";
+        private const string AppIconPath = "Assets/Brand/AppIcons/WaypointRally.png";
 
         [MenuItem("Waypoint Rally/Setup Project")]
         public static void SetupProject()
@@ -46,6 +47,7 @@ namespace WaypointRally.Editor
             PlayerSettings.allowedAutorotateToLandscapeLeft = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.colorSpace = ColorSpace.Linear;
+            SignalHunt.Editor.BrandIconUtility.ApplyIosIcon(AppIconPath);
             EnsureRuntimeShaders();
             AssetDatabase.SaveAssets();
             Debug.Log("Waypoint Rally project and scene configured.");
