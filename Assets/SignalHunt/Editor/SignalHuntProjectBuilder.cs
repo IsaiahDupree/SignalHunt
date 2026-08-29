@@ -13,6 +13,7 @@ namespace SignalHunt.Editor
     {
         private const string MainScenePath = "Assets/SignalHunt/Scenes/Main.unity";
         private const string ConfigAssetPath = "Assets/Resources/SignalHuntRuntimeConfig.asset";
+        private const string AppIconPath = "Assets/Brand/AppIcons/SignalHunt.png";
 
         [MenuItem("Signal Hunt/Setup Project")]
         public static void SetupProject()
@@ -47,6 +48,7 @@ namespace SignalHunt.Editor
             PlayerSettings.allowedAutorotateToLandscapeLeft = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.colorSpace = ColorSpace.Linear;
+            BrandIconUtility.ApplyIosIcon(AppIconPath);
             EnsureRuntimeShaders();
             AssetDatabase.SaveAssets();
             Debug.Log("Signal Hunt project and Main scene configured.");
@@ -56,7 +58,7 @@ namespace SignalHunt.Editor
         public static void BuildIos()
         {
             SetupProject();
-            CreateRuntimeConfig();
+            var hasRuntimeConfig = TryCreateRuntimeConfig();
             try
             {
                 var options = new BuildPlayerOptions
@@ -74,8 +76,11 @@ namespace SignalHunt.Editor
             }
             finally
             {
-                AssetDatabase.DeleteAsset(ConfigAssetPath);
-                AssetDatabase.Refresh();
+                if (hasRuntimeConfig)
+                {
+                    AssetDatabase.DeleteAsset(ConfigAssetPath);
+                    AssetDatabase.Refresh();
+                }
             }
         }
 
@@ -97,15 +102,18 @@ namespace SignalHunt.Editor
             }
         }
 
-        private static void CreateRuntimeConfig()
+        private static bool TryCreateRuntimeConfig()
         {
+            AssetDatabase.DeleteAsset(ConfigAssetPath);
+            AssetDatabase.Refresh();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var anonKey = Environment.GetEnvironmentVariable("SIGNAL_HUNT_SUPABASE_ANON_KEY") ??
                           Environment.GetEnvironmentVariable("SUPABASE_ANON_KEY");
             if (!Uri.TryCreate(url, UriKind.Absolute, out _) || string.IsNullOrWhiteSpace(anonKey))
             {
-                throw new BuildFailedException(
-                    "Set SUPABASE_URL and SIGNAL_HUNT_SUPABASE_ANON_KEY before building iOS. Secrets are injected into the build and are not committed.");
+                Debug.LogWarning(
+                    "Building Signal Hunt in honest offline mode. Set SUPABASE_URL and SIGNAL_HUNT_SUPABASE_ANON_KEY to enable the live leaderboard.");
+                return false;
             }
 
             Directory.CreateDirectory("Assets/Resources");
@@ -114,6 +122,7 @@ namespace SignalHunt.Editor
             config.supabaseAnonKey = anonKey;
             AssetDatabase.CreateAsset(config, ConfigAssetPath);
             AssetDatabase.SaveAssets();
+            return true;
         }
 
         private static void EnsureRuntimeShaders()

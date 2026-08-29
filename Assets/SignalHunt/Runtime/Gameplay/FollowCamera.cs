@@ -55,6 +55,14 @@ namespace SignalHunt.Gameplay
             if (target != null)
             {
                 transform.position = DesiredPosition();
+                var lookTarget = _cinematic && _cinematicShot == ReplayCameraShot.Overhead
+                    ? _target.position
+                    : _target.position + Vector3.up * 0.45f + _target.forward * _lookAhead;
+                var lookDirection = lookTarget - transform.position;
+                if (lookDirection.sqrMagnitude > 0.01f)
+                {
+                    transform.rotation = Quaternion.LookRotation(lookDirection, Vector3.up);
+                }
             }
         }
 

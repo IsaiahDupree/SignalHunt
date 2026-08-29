@@ -1,0 +1,11 @@
+{
+  "name": "TreasureHunt.PlayModeTests",
+  "rootNamespace": "TreasureHunt.PlayModeTests",
+  "references": [
+    "SignalHunt.Runtime",
+    "TreasureHunt.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

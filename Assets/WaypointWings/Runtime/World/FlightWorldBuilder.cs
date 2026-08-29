@@ -87,13 +87,13 @@ namespace WaypointWings.World
             gate.transform.SetParent(parent, false);
             gate.transform.localPosition = definition.position;
             gate.transform.localRotation = definition.rotation;
-            const int segments = 18;
+            const int segments = 24;
             for (var segment = 0; segment < segments; segment++)
             {
                 var angle = segment * Mathf.PI * 2f / segments;
                 var position = new Vector3(Mathf.Cos(angle) * definition.radius, Mathf.Sin(angle) * definition.radius, 0f);
                 var piece = PrimitiveFactory.Cube("Gate Segment", gate.transform, position,
-                    new Vector3(0.38f, definition.radius * 0.38f, 0.42f),
+                    new Vector3(0.62f, definition.radius * 0.27f, 0.56f),
                     palette.NeonMaterials[definition.styleIndex % 4], false);
                 piece.transform.localRotation = Quaternion.Euler(0f, 0f, -angle * Mathf.Rad2Deg);
             }
@@ -117,12 +117,19 @@ namespace WaypointWings.World
         public int Index => _index;
         public string GateId => _id;
 
+        public void ResetForRestart()
+        {
+            gameObject.SetActive(_index == 0);
+            transform.localScale = _baseScale;
+        }
+
         public void Initialize(int index, string id, Func<int, string, bool> onPassed)
         {
             _index = index;
             _id = id;
             _onPassed = onPassed;
             _baseScale = transform.localScale;
+            gameObject.SetActive(_index == 0);
         }
 
         private void Update()
@@ -140,6 +147,14 @@ namespace WaypointWings.World
             }
             SignalHunt.World.SignalPickupBurst.Spawn(transform.position,
                 GetComponentInChildren<Renderer>()?.sharedMaterial);
+            foreach (var gate in FindObjectsByType<FlightGate>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (gate.Index == _index + 1)
+                {
+                    gate.gameObject.SetActive(true);
+                    break;
+                }
+            }
             gameObject.SetActive(false);
         }
     }
