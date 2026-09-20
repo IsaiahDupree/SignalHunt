@@ -24,6 +24,7 @@ namespace SignalHunt.Editor
             var plistPath = Path.Combine(buildPath, "Info.plist");
             var plist = new PlistDocument();
             plist.ReadFromFile(plistPath);
+            plist.root.SetString("CFBundleVersion", "$(CURRENT_PROJECT_VERSION)");
             plist.root.SetString("NSPhotoLibraryAddUsageDescription",
                 "Save Treasure Hunter, Signal Hunt, Waypoint Rally, and Waypoint Wings replay videos.");
             plist.WriteToFile(plistPath);
