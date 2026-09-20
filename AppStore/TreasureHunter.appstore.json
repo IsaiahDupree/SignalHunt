@@ -1,0 +1,12 @@
+{
+  "name": "Treasure Hunter",
+  "platform": "ios",
+  "project": "Unity-iPhone.xcodeproj",
+  "scheme": "Unity-iPhone",
+  "configuration": "Release",
+  "bundle_id": "com.isaiahdupree.treasurehunter",
+  "version": "1.0",
+  "team_id": "Y4HDXFWXUV",
+  "profile_name": "Treasure Hunter App Store",
+  "archive_jobs": 1
+}
