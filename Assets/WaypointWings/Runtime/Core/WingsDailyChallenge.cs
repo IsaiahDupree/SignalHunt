@@ -14,11 +14,11 @@ namespace WaypointWings.Core
         public static DailyChallenge ForUtcDate(DateTime utcDate, WingsStage? forcedStage = null)
         {
             var date = utcDate.ToUniversalTime().Date;
-            var stage = forcedStage ?? (date.DayOfYear % 2 == 0 ? WingsStage.Archipelago : WingsStage.Skyway);
+            var stage = forcedStage ?? WingsStage.Archipelago;
             var stageKey = stage == WingsStage.Archipelago ? "archipelago" : "skyway";
-            var displayName = stage == WingsStage.Archipelago ? "Sunrise Archipelago" : "Neon Skyway";
-            var theme = stage == WingsStage.Archipelago ? "sunrise" : "neon";
-            var template = stage == WingsStage.Archipelago ? "wings-archipelago-v1" : "wings-skyway-v1";
+            var displayName = stage == WingsStage.Archipelago ? "Sunny Archipelago" : "Legacy Skyway";
+            var theme = stage == WingsStage.Archipelago ? "sunny-island" : "legacy";
+            var template = stage == WingsStage.Archipelago ? "wings-archipelago-v2" : "wings-skyway-v2";
             var dateKey = date.ToString("yyyy-MM-dd");
             var identity = $"{dateKey}|{DailyGameCatalog.WaypointWingsAppKey}|{stageKey}|{theme}|standard|{template}";
             var generationSeed = DailyChallenge.StableHash(identity);
@@ -34,12 +34,12 @@ namespace WaypointWings.Core
                 theme = theme,
                 difficulty = "standard",
                 worldTemplate = template,
-                generationVersion = "wings-course-generator-v1",
+                generationVersion = "wings-course-generator-v2",
                 stageKey = stageKey,
                 stageDisplayName = displayName,
                 displaySeed = displaySeed,
                 generationSeed = generationSeed,
-                collectibleCount = 14
+                collectibleCount = stage == WingsStage.Archipelago ? 12 : 14
             };
         }
 
@@ -65,7 +65,7 @@ namespace WaypointWings.Core
             return arguments[marker + 1].ToLowerInvariant() switch
             {
                 "archipelago" => WingsStage.Archipelago,
-                "skyway" => WingsStage.Skyway,
+                "skyway" => WingsStage.Archipelago,
                 _ => null
             };
         }

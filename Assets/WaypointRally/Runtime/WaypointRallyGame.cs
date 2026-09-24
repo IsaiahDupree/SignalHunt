@@ -24,7 +24,7 @@ namespace WaypointRally
         private ReplayRun _latestRun;
         private DailyMontageExporter _filmExporter;
 
-        private void Start()
+        private IEnumerator Start()
         {
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 0;
@@ -35,6 +35,14 @@ namespace WaypointRally
             Screen.orientation = ScreenOrientation.Portrait;
 
             var challenge = RallyDailyChallenge.Today();
+            var startMenu = gameObject.AddComponent<DailyStartMenu>();
+            startMenu.Initialize(challenge);
+            if (startMenu.CaptureIfRequested("--rally-capture-loading"))
+            {
+                yield break;
+            }
+            yield return null;
+            startMenu.SetLoadingProgress(0.24f, "READING TODAY'S ROAD SEED");
             ConfigureRendering(challenge);
             _palette = new GamePalette();
             _palette.ApplyVehicleColor(PlayerCosmetics.VehicleColorIndex);
@@ -42,6 +50,8 @@ namespace WaypointRally
             _session = gameObject.AddComponent<RallySession>();
             RallyWorldBuilder.Build(layout, challenge, _palette,
                 (index, id) => _session.PassCheckpoint(index, id));
+            startMenu.SetLoadingProgress(0.66f, "BUILDING ROADS AND SHORTCUTS");
+            yield return new WaitForSecondsRealtime(0.16f);
 
             var vehicle = RallyCarFactory.CreatePlayer(_palette, layout.playerSpawn, layout.playerHeading);
             var nameplate = WorldNameplate.Create(vehicle.transform, PlayerIdentity.DisplayName);
@@ -49,6 +59,8 @@ namespace WaypointRally
             _session.Completed += _ => nameplate.gameObject.SetActive(false);
 
             var camera = BuildCamera(vehicle, challenge);
+            var menuCamera = camera.gameObject.AddComponent<DailyMenuCameraMotion>();
+            menuCamera.Initialize(camera, vehicle.transform, challenge);
             _hud = gameObject.AddComponent<RallyHud>();
             _hud.Initialize(_session, challenge);
             _hud.Track(vehicle);
@@ -68,6 +80,7 @@ namespace WaypointRally
             {
                 var ghost = RallyCarFactory.CreateReplayVisual(_palette, personalBest, 0, true);
                 ghost.name = "Personal Best Rally Ghost";
+                menuCamera.HideActor(ghost);
                 ghost.AddComponent<RallyGhostPlayback>().Initialize(personalBest, _session);
             }
 
@@ -81,6 +94,10 @@ namespace WaypointRally
                 }
                 var ghost = RallyCarFactory.CreateReplayVisual(_palette, topGhost, 1, true);
                 ghost.name = "Daily Leader Rally Ghost";
+                if (menuCamera != null)
+                {
+                    menuCamera.HideActor(ghost);
+                }
                 ghost.AddComponent<RallyGhostPlayback>().Initialize(topGhost, _session);
             }));
 
@@ -88,7 +105,16 @@ namespace WaypointRally
             _filmExporter.Initialize(camera, vehicle.transform, _palette,
                 (run, index) => RallyCarFactory.CreateReplayVisual(_palette, run, index, false));
             _filmExporter.StatusChanged += _hud.SetNetworkStatus;
-            _filmExporter.PresentationModeChanged += _hud.SetPresentationMode;
+            var gameStarted = false;
+            _filmExporter.PresentationModeChanged += active => _hud.SetPresentationMode(active || !gameStarted);
+            _filmExporter.PresentationModeChanged += active =>
+            {
+                startMenu.SetPresentationMode(active);
+                if (!active && !gameStarted)
+                {
+                    menuCamera.ResumeAfterReplay();
+                }
+            };
             _hud.WatchRequested += () =>
             {
                 var run = _latestRun ?? ReplayStore.LoadLatest(challenge.challengeId);
@@ -96,8 +122,49 @@ namespace WaypointRally
             };
             _hud.FilmRequested += () => StartCoroutine(ExportDailyFilm());
 
-            _session.Begin();
-            StartCoroutine(CaptureIfRequested(_session, _filmExporter));
+            _hud.SetPresentationMode(true);
+            startMenu.StyleRequested += () =>
+            {
+                _palette.ApplyVehicleColor(PlayerCosmetics.CycleVehicleColor());
+                startMenu.NotifyStyleChanged(PlayerCosmetics.VehicleColorIndex);
+            };
+            startMenu.FilmRequested += () =>
+            {
+                menuCamera.PauseForReplay();
+                StartCoroutine(ExportDailyFilm());
+            };
+            startMenu.PlayRequested += () =>
+            {
+                gameStarted = true;
+                menuCamera.Finish();
+                _hud.SetPresentationMode(false);
+                _session.Begin();
+                StartCoroutine(CaptureIfRequested(_session, _filmExporter));
+            };
+            startMenu.SetLoadingProgress(0.92f, "POSITIONING DAILY GHOSTS");
+            yield return new WaitForSecondsRealtime(0.28f);
+            startMenu.SetLoadingProgress(1f, "TODAY'S RALLY IS READY");
+            yield return new WaitForSecondsRealtime(0.18f);
+            startMenu.ShowMenu();
+            var menuCapture = startMenu.CaptureIfRequested("--rally-capture-menu");
+            if (!menuCapture && HasCaptureRequest("--rally-capture", "--rally-capture-result",
+                    "--rally-capture-film"))
+            {
+                startMenu.BeginForAutomation();
+            }
+        }
+
+        private static bool HasCaptureRequest(params string[] markers)
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            foreach (var marker in markers)
+            {
+                if (Array.IndexOf(arguments, marker) >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void OnRecordingCompleted(ReplayRun run)
@@ -194,48 +261,38 @@ namespace WaypointRally
             camera.nearClipPlane = 0.08f;
             camera.farClipPlane = 520f;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = challenge.stageKey == "harbor-town"
-                ? new Color(0.35f, 0.72f, 0.91f)
-                : new Color(0.20f, 0.045f, 0.17f);
+            camera.backgroundColor = new Color(0.35f, 0.72f, 0.91f);
             var follow = instance.AddComponent<FollowCamera>();
-            follow.ConfigureGameplay(7.2f, 9.6f, 4.2f, 3.0f, 61f, 74f, 30f);
+            follow.ConfigureGameplay(8.2f, 10.2f, 4.4f, 2.8f, 61f, 71f, 30f);
             follow.SetTarget(vehicle.transform);
             return follow;
         }
 
         private static void ConfigureRendering(DailyChallenge challenge)
         {
-            var town = challenge.stageKey == "harbor-town";
+            _ = challenge;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogDensity = town ? 0.0032f : 0.0042f;
-            RenderSettings.fogColor = town
-                ? new Color(0.62f, 0.79f, 0.89f)
-                : new Color(0.72f, 0.31f, 0.16f);
+            RenderSettings.fogDensity = 0.0026f;
+            RenderSettings.fogColor = new Color(0.68f, 0.84f, 0.91f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = town
-                ? new Color(0.64f, 0.82f, 0.98f)
-                : new Color(0.98f, 0.46f, 0.20f);
-            RenderSettings.ambientEquatorColor = town
-                ? new Color(0.43f, 0.58f, 0.65f)
-                : new Color(0.62f, 0.30f, 0.16f);
-            RenderSettings.ambientGroundColor = town
-                ? new Color(0.16f, 0.25f, 0.25f)
-                : new Color(0.31f, 0.18f, 0.10f);
+            RenderSettings.ambientSkyColor = new Color(0.68f, 0.86f, 0.98f);
+            RenderSettings.ambientEquatorColor = new Color(0.46f, 0.64f, 0.68f);
+            RenderSettings.ambientGroundColor = new Color(0.18f, 0.30f, 0.24f);
 
-            var sunObject = new GameObject(town ? "Harbor Sun" : "Dustlands Sunset");
+            var sunObject = new GameObject("Island Sun");
             var sun = sunObject.AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = town ? new Color(1f, 0.88f, 0.70f) : new Color(1f, 0.48f, 0.22f);
-            sun.intensity = town ? 1.35f : 1.5f;
+            sun.color = new Color(1f, 0.91f, 0.74f);
+            sun.intensity = 1.35f;
             sun.shadows = LightShadows.Soft;
-            sunObject.transform.rotation = Quaternion.Euler(town ? 42f : 24f, -35f, 0f);
+            sunObject.transform.rotation = Quaternion.Euler(46f, -35f, 0f);
 
             var rimObject = new GameObject("Rally Rim Light");
             var rim = rimObject.AddComponent<Light>();
             rim.type = LightType.Directional;
-            rim.color = town ? new Color(0.12f, 0.82f, 1f) : new Color(1f, 0.16f, 0.54f);
-            rim.intensity = 0.42f;
+            rim.color = new Color(0.12f, 0.82f, 1f);
+            rim.intensity = 0.32f;
             rim.shadows = LightShadows.None;
             rimObject.transform.rotation = Quaternion.Euler(28f, 142f, 0f);
         }

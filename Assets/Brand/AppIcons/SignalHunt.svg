@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Signal Hunt app icon</title>
+  <desc id="desc">A cyan hover racer chasing a signal across a sunny tropical island.</desc>
+  <defs>
+    <linearGradient id="ocean" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7AE8F2"/>
+      <stop offset="1" stop-color="#15BBD0"/>
+    </linearGradient>
+    <linearGradient id="island" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8CE35C"/>
+      <stop offset="1" stop-color="#33B85C"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#73F4F7"/>
+      <stop offset="1" stop-color="#00C8DF"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="28" stdDeviation="22" flood-color="#06334A" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#ocean)"/>
+  <circle cx="825" cy="174" r="76" fill="#FFF6BF" opacity=".95"/>
+  <path d="M-50 689C109 590 191 672 299 599c130-88 206-220 362-188 96 20 134 113 243 135 64 13 126-2 180-28v506H-50Z" fill="#FFE9A8"/>
+  <path d="M-54 653c144-98 242-8 354-89 128-93 222-215 367-165 96 33 139 121 250 135 58 8 113-7 167-39v529H-54Z" fill="url(#island)"/>
+  <path d="M-11 789c150-43 253-27 350-99 99-74 141-183 279-214 104-24 167 38 236 77 66 38 130 52 220 25" fill="none" stroke="#F7DB86" stroke-width="112" stroke-linecap="round"/>
+  <path d="M-11 789c150-43 253-27 350-99 99-74 141-183 279-214 104-24 167 38 236 77 66 38 130 52 220 25" fill="none" stroke="#173A4B" stroke-width="70" stroke-linecap="round"/>
+  <path d="M20 773c140-35 235-27 315-88" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-dasharray="30 35" opacity=".72"/>
+  <g filter="url(#shadow)">
+    <path d="M356 416c31-112 104-187 156-187s125 75 156 187l51 257c9 45-14 91-55 111l-91 45c-38 19-84 19-122 0l-91-45c-41-20-64-66-55-111Z" fill="url(#car)" stroke="#06334A" stroke-width="28" stroke-linejoin="round"/>
+    <path d="M431 426c12-68 45-117 81-117s69 49 81 117l12 66H419Z" fill="#123D58"/>
+    <path d="m370 569-91 69 15 88 100-29Z" fill="#FF4D93" stroke="#06334A" stroke-width="22" stroke-linejoin="round"/>
+    <path d="m654 569 91 69-15 88-100-29Z" fill="#FF4D93" stroke="#06334A" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M442 657h140l-18 101-52 28-52-28Z" fill="#F3FBFF" stroke="#06334A" stroke-width="20" stroke-linejoin="round"/>
+    <circle cx="512" cy="559" r="51" fill="#FFFDF0" stroke="#06334A" stroke-width="22"/>
+    <circle cx="512" cy="559" r="20" fill="#FF4D93"/>
+  </g>
+  <g fill="none" stroke="#FFFDF0" stroke-width="26" stroke-linecap="round">
+    <path d="M378 219a189 189 0 0 1 268 0"/>
+    <path d="M425 267a123 123 0 0 1 174 0"/>
+  </g>
+</svg>

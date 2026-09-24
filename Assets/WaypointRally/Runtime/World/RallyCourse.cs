@@ -72,7 +72,11 @@ namespace WaypointRally.World
 
             var random = new DeterministicRandom(challenge.generationSeed);
             var layout = new RallyCourseLayout { challengeId = challenge.challengeId };
-            if (challenge.stageKey == "harbor-town")
+            if (challenge.stageKey == "island-loop")
+            {
+                GenerateIslandLoop(layout, random);
+            }
+            else if (challenge.stageKey == "harbor-town")
             {
                 GenerateTown(layout, random);
             }
@@ -82,6 +86,46 @@ namespace WaypointRally.World
             }
             OrientCheckpointsAndSpawn(layout);
             return layout;
+        }
+
+        private static void GenerateIslandLoop(RallyCourseLayout layout, DeterministicRandom random)
+        {
+            var phase = -Mathf.PI * 0.5f + random.Range(-0.08f, 0.08f);
+            for (var index = 0; index < 10; index++)
+            {
+                var angle = phase + index * Mathf.PI * 2f / 10f;
+                var radius = 58f + random.Range(-3f, 3f);
+                layout.checkpoints.Add(new RallyCheckpointDefinition
+                {
+                    id = $"checkpoint-{index + 1:D2}",
+                    position = new Vector3(Mathf.Cos(angle) * radius, 0.65f, Mathf.Sin(angle) * radius),
+                    width = 13f,
+                    styleIndex = index % 4
+                });
+            }
+            for (var index = 0; index < layout.checkpoints.Count; index++)
+            {
+                layout.roads.Add(new RallyRoadDefinition
+                {
+                    start = layout.checkpoints[index].position,
+                    end = layout.checkpoints[(index + 1) % layout.checkpoints.Count].position,
+                    width = 11f,
+                    styleIndex = 0
+                });
+            }
+            for (var index = 0; index < 36; index++)
+            {
+                var angle = random.Range(0f, Mathf.PI * 2f);
+                var radius = random.Range(76f, 94f);
+                layout.decorations.Add(new RallyPropDefinition
+                {
+                    position = new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius),
+                    scale = new Vector3(random.Range(0.65f, 1.05f), random.Range(3f, 5.2f),
+                        random.Range(0.65f, 1.05f)),
+                    heading = random.Range(0f, 360f),
+                    styleIndex = random.Range(0, 4)
+                });
+            }
         }
 
         private static void GenerateTown(RallyCourseLayout layout, DeterministicRandom random)
@@ -203,9 +247,12 @@ namespace WaypointRally.World
                 layout.checkpoints[index] = checkpoint;
             }
             var first = layout.checkpoints[0];
-            var forward = Quaternion.Euler(0f, first.heading, 0f) * Vector3.forward;
-            layout.playerSpawn = first.position - forward * 15f + Vector3.up * 0.6f;
-            layout.playerHeading = first.heading;
+            var previous = layout.checkpoints[layout.checkpoints.Count - 1];
+            var approach = first.position - previous.position;
+            approach.y = 0f;
+            approach.Normalize();
+            layout.playerSpawn = first.position - approach * 15f + Vector3.up * 0.6f;
+            layout.playerHeading = Quaternion.LookRotation(approach, Vector3.up).eulerAngles.y;
         }
     }
 }

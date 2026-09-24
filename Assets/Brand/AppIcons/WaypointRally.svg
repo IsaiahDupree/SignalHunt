@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Waypoint Rally app icon</title>
+  <desc id="desc">An orange rally car charging through a cyan checkpoint on a sunny island road.</desc>
+  <defs>
+    <linearGradient id="ocean" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9DECF2"/>
+      <stop offset="1" stop-color="#18B9CD"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A1E867"/>
+      <stop offset="1" stop-color="#39B95A"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFC237"/>
+      <stop offset="1" stop-color="#FF7B22"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="28" stdDeviation="22" flood-color="#06334A" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#ocean)"/>
+  <circle cx="824" cy="176" r="76" fill="#FFF6BF"/>
+  <path d="M-40 684c115-122 216-94 316-166 135-98 191-220 354-198 120 16 171 130 294 156 69 15 119-2 160-20v568H-40Z" fill="#FFE9A8"/>
+  <path d="M-46 648c108-113 213-75 315-155 132-103 208-205 357-174 119 25 168 132 302 151 51 8 103-7 156-40v594H-46Z" fill="url(#grass)"/>
+  <path d="M-30 826c169-25 272-92 330-194 56-99 76-183 183-222 96-35 161 15 221 87 66 80 156 120 350 96" fill="none" stroke="#F7DB86" stroke-width="142" stroke-linecap="round"/>
+  <path d="M-30 826c169-25 272-92 330-194 56-99 76-183 183-222 96-35 161 15 221 87 66 80 156 120 350 96" fill="none" stroke="#263C49" stroke-width="92" stroke-linecap="round"/>
+  <path d="M-14 823c143-25 237-80 290-166" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-dasharray="34 34" opacity=".7"/>
+  <g filter="url(#shadow)">
+    <path d="M316 289v276" stroke="#06334A" stroke-width="28" stroke-linecap="round"/>
+    <path d="M708 289v276" stroke="#06334A" stroke-width="28" stroke-linecap="round"/>
+    <path d="M316 298h392" stroke="#06334A" stroke-width="92" stroke-linecap="round"/>
+    <path d="M316 298h392" stroke="#4DE9EC" stroke-width="54" stroke-linecap="round" stroke-dasharray="54 54"/>
+    <path d="M356 466c26-111 88-180 156-180s130 69 156 180l51 283c8 43-15 85-55 103l-82 37c-45 20-95 20-140 0l-82-37c-40-18-63-60-55-103Z" fill="url(#orange)" stroke="#06334A" stroke-width="28" stroke-linejoin="round"/>
+    <path d="M432 459c14-61 44-96 80-96s66 35 80 96l13 57H419Z" fill="#173F56"/>
+    <path d="M389 618h246l22 109H367Z" fill="#FFF3CF" opacity=".9"/>
+    <path d="m389 619 76 108M635 619l-76 108" stroke="#06334A" stroke-width="22"/>
+    <rect x="339" y="645" width="52" height="117" rx="22" fill="#163544"/>
+    <rect x="633" y="645" width="52" height="117" rx="22" fill="#163544"/>
+    <path d="M444 789h136" stroke="#FFF8E2" stroke-width="23" stroke-linecap="round"/>
+  </g>
+</svg>

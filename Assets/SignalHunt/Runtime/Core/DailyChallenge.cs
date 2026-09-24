@@ -27,18 +27,21 @@ namespace SignalHunt.Core
         public uint generationSeed;
         public int collectibleCount;
 
-        public WorldStage Stage => stageKey == "island" ? WorldStage.Island : WorldStage.City;
+        public WorldStage Stage => stageKey == "island" || stageKey == "island-loop" ||
+                                   stageKey == "archipelago" || stageKey == "treasure-island"
+            ? WorldStage.Island
+            : WorldStage.City;
 
         public static DailyChallenge ForUtcDate(DateTime utcDate, WorldStage? forcedStage = null)
         {
             var date = utcDate.ToUniversalTime().Date;
             const string difficulty = "standard";
-            var stage = forcedStage ?? (date.DayOfYear % 2 == 0 ? WorldStage.Island : WorldStage.City);
+            var stage = forcedStage ?? WorldStage.Island;
             var stageKey = stage == WorldStage.Island ? "island" : "city";
-            var stageDisplayName = stage == WorldStage.Island ? "Emerald Isle" : "Neon District";
-            var theme = stage == WorldStage.Island ? "coastal" : "neon";
-            var template = stage == WorldStage.Island ? "synthetic-island-v1" : "synthetic-town-v1";
-            var generationVersion = stage == WorldStage.Island ? "island-generator-v1" : "town-generator-v1";
+            var stageDisplayName = stage == WorldStage.Island ? "Signal Island" : "Legacy District";
+            var theme = stage == WorldStage.Island ? "sunny-island" : "legacy";
+            var template = stage == WorldStage.Island ? "signal-island-adventure-v2" : "synthetic-town-v1";
+            var generationVersion = stage == WorldStage.Island ? "island-generator-v2" : "town-generator-v1";
             var season = SeasonFor(date.Month);
             var dateKey = date.ToString("yyyy-MM-dd");
             var identity = $"{dateKey}|{season}|{theme}|{difficulty}|{template}";
@@ -85,7 +88,7 @@ namespace SignalHunt.Core
 
             return arguments[marker + 1].ToLowerInvariant() switch
             {
-                "city" => WorldStage.City,
+                "city" => WorldStage.Island,
                 "island" => WorldStage.Island,
                 _ => null
             };

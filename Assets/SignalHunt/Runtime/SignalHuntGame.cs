@@ -22,7 +22,7 @@ namespace SignalHunt
         private CinematicReplayExporter _exporter;
         private DailyMontageExporter _montageExporter;
 
-        private void Start()
+        private IEnumerator Start()
         {
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 0;
@@ -33,6 +33,14 @@ namespace SignalHunt
             Screen.orientation = ScreenOrientation.Portrait;
 
             var challenge = DailyChallenge.Today();
+            var startMenu = gameObject.AddComponent<DailyStartMenu>();
+            startMenu.Initialize(challenge);
+            if (startMenu.CaptureIfRequested("--signalhunt-capture-loading"))
+            {
+                yield break;
+            }
+            yield return null;
+            startMenu.SetLoadingProgress(0.24f, "DECODING TODAY'S WORLD");
             ConfigureRendering(challenge);
             _palette = new GamePalette();
             _palette.ApplyVehicleColor(PlayerCosmetics.VehicleColorIndex);
@@ -57,6 +65,8 @@ namespace SignalHunt
                 playerHeading = town.playerHeading;
                 relicCount = town.relics.Count;
             }
+            startMenu.SetLoadingProgress(0.66f, "PLACING SIGNALS AND SHORTCUTS");
+            yield return new WaitForSecondsRealtime(0.16f);
 
             var vehicle = HoverVehicleFactory.CreatePlayer(_palette, playerSpawn, playerHeading);
             var playerNameplate = WorldNameplate.Create(vehicle.transform, PlayerIdentity.DisplayName);
@@ -64,6 +74,8 @@ namespace SignalHunt
             _session.Completed += _ => playerNameplate.gameObject.SetActive(false);
 
             var followCamera = BuildCamera(vehicle.transform, challenge);
+            var menuCamera = followCamera.gameObject.AddComponent<DailyMenuCameraMotion>();
+            menuCamera.Initialize(followCamera, vehicle.transform, challenge);
             _hud = gameObject.AddComponent<HuntHud>();
             _hud.Initialize(_session, challenge);
             _hud.TrackVehicle(vehicle);
@@ -81,6 +93,7 @@ namespace SignalHunt
             if (bestReplay?.frames != null && bestReplay.frames.Count > 1)
             {
                 var ghost = HoverVehicleFactory.CreateReplayVisual(_palette, "Personal Best Ghost", true);
+                menuCamera.HideActor(ghost);
                 ghost.AddComponent<GhostPlayback>().Initialize(bestReplay, _session);
             }
 
@@ -95,6 +108,10 @@ namespace SignalHunt
 
                 var ghost = HoverVehicleFactory.CreateReplayVisual(_palette,
                     $"Daily Leader Ghost · {topGhost.playerName}", true);
+                if (menuCamera != null)
+                {
+                    menuCamera.HideActor(ghost);
+                }
                 ghost.AddComponent<GhostPlayback>().Initialize(topGhost, _session);
             }));
             _exporter = gameObject.AddComponent<CinematicReplayExporter>();
@@ -105,11 +122,61 @@ namespace SignalHunt
             _montageExporter = gameObject.AddComponent<DailyMontageExporter>();
             _montageExporter.Initialize(followCamera, vehicle.transform, _palette);
             _montageExporter.StatusChanged += _hud.SetNetworkStatus;
-            _montageExporter.PresentationModeChanged += _hud.SetPresentationMode;
+            var gameStarted = false;
+            _montageExporter.PresentationModeChanged += active => _hud.SetPresentationMode(active || !gameStarted);
+            _montageExporter.PresentationModeChanged += active =>
+            {
+                startMenu.SetPresentationMode(active);
+                if (!active && !gameStarted)
+                {
+                    menuCamera.ResumeAfterReplay();
+                }
+            };
             _hud.MontageRequested += () => StartCoroutine(ExportDailyFilm());
 
-            _session.Begin();
-            StartCoroutine(CapturePreviewIfRequested(_session, _montageExporter));
+            _hud.SetPresentationMode(true);
+            startMenu.StyleRequested += () =>
+            {
+                _palette.ApplyVehicleColor(PlayerCosmetics.CycleVehicleColor());
+                startMenu.NotifyStyleChanged(PlayerCosmetics.VehicleColorIndex);
+            };
+            startMenu.FilmRequested += () =>
+            {
+                menuCamera.PauseForReplay();
+                StartCoroutine(ExportDailyFilm());
+            };
+            startMenu.PlayRequested += () =>
+            {
+                gameStarted = true;
+                menuCamera.Finish();
+                _hud.SetPresentationMode(false);
+                _session.Begin();
+                StartCoroutine(CapturePreviewIfRequested(_session, _montageExporter));
+            };
+            startMenu.SetLoadingProgress(0.92f, "SYNCING GHOST PATHS");
+            yield return new WaitForSecondsRealtime(0.28f);
+            startMenu.SetLoadingProgress(1f, "TODAY'S WORLD IS READY");
+            yield return new WaitForSecondsRealtime(0.18f);
+            startMenu.ShowMenu();
+            var menuCapture = startMenu.CaptureIfRequested("--signalhunt-capture-menu");
+            if (!menuCapture && HasCaptureRequest("--signalhunt-capture", "--signalhunt-capture-result",
+                    "--signalhunt-capture-film"))
+            {
+                startMenu.BeginForAutomation();
+            }
+        }
+
+        private static bool HasCaptureRequest(params string[] markers)
+        {
+            var arguments = Environment.GetCommandLineArgs();
+            foreach (var marker in markers)
+            {
+                if (Array.IndexOf(arguments, marker) >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void OnRecordingCompleted(ReplayRun run)

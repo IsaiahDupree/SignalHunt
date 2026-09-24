@@ -1,0 +1,9 @@
+{
+  "name": "TreasureHunt.Runtime",
+  "rootNamespace": "TreasureHunt",
+  "references": [
+    "SignalHunt.Runtime",
+    "UnityEngine.UI"
+  ],
+  "autoReferenced": true
+}

@@ -13,6 +13,7 @@ namespace WaypointWings.Editor
     {
         private const string MainScenePath = "Assets/WaypointWings/Scenes/Main.unity";
         private const string ConfigAssetPath = "Assets/Resources/SignalHuntRuntimeConfig.asset";
+        private const string AppIconPath = "Assets/Brand/AppIcons/WaypointWings.png";
 
         [MenuItem("Waypoint Wings/Setup Project")]
         public static void SetupProject()
@@ -46,6 +47,7 @@ namespace WaypointWings.Editor
             PlayerSettings.allowedAutorotateToLandscapeLeft = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
             PlayerSettings.colorSpace = ColorSpace.Linear;
+            SignalHunt.Editor.BrandIconUtility.ApplyIosIcon(AppIconPath);
             EnsureRuntimeShaders();
             AssetDatabase.SaveAssets();
             Debug.Log("Waypoint Wings project and scene configured.");
@@ -72,7 +74,7 @@ namespace WaypointWings.Editor
         public static void BuildIos()
         {
             SetupProject();
-            CreateRuntimeConfig();
+            var hasRuntimeConfig = TryCreateRuntimeConfig();
             try
             {
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
@@ -89,19 +91,26 @@ namespace WaypointWings.Editor
             }
             finally
             {
-                AssetDatabase.DeleteAsset(ConfigAssetPath);
-                AssetDatabase.Refresh();
+                if (hasRuntimeConfig)
+                {
+                    AssetDatabase.DeleteAsset(ConfigAssetPath);
+                    AssetDatabase.Refresh();
+                }
             }
         }
 
-        private static void CreateRuntimeConfig()
+        private static bool TryCreateRuntimeConfig()
         {
+            AssetDatabase.DeleteAsset(ConfigAssetPath);
+            AssetDatabase.Refresh();
             var url = Environment.GetEnvironmentVariable("SUPABASE_URL");
             var key = Environment.GetEnvironmentVariable("SIGNAL_HUNT_SUPABASE_ANON_KEY") ??
                       Environment.GetEnvironmentVariable("SUPABASE_ANON_KEY");
             if (!Uri.TryCreate(url, UriKind.Absolute, out _) || string.IsNullOrWhiteSpace(key))
             {
-                throw new BuildFailedException("Set SUPABASE_URL and SIGNAL_HUNT_SUPABASE_ANON_KEY before building iOS.");
+                Debug.LogWarning(
+                    "Building Waypoint Wings in honest offline mode. Set SUPABASE_URL and SIGNAL_HUNT_SUPABASE_ANON_KEY to enable the live leaderboard.");
+                return false;
             }
             Directory.CreateDirectory("Assets/Resources");
             var config = ScriptableObject.CreateInstance<SignalHuntRuntimeConfig>();
@@ -109,6 +118,7 @@ namespace WaypointWings.Editor
             config.supabaseAnonKey = key;
             AssetDatabase.CreateAsset(config, ConfigAssetPath);
             AssetDatabase.SaveAssets();
+            return true;
         }
 
         private static void EnsureRuntimeShaders()

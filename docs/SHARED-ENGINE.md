@@ -1,12 +1,13 @@
 # Shared daily challenge engine
 
-The product family should ship as three distinct store apps with one deliberately small shared engine. Players should immediately understand each app's verb, while identity, daily competition, replays, and cosmetics remain network-wide.
+The product family ships as four distinct app shells with one deliberately small shared engine. Players should immediately understand each app's verb, while identity, daily competition, replays, and cosmetics remain network-wide.
 
 ## Product boundary
 
 | App | Primary verb | World axis | Completion rule | Social replay hook |
 |---|---|---:|---|---|
 | Signal Hunt | Search and collect | Ground | Find all relics | Missed-item route and hunt ghosts |
+| Treasure Hunter | Explore and scan | Ground | Secure any-order artifacts | Detector routes and discovery moments |
 | Waypoint Rally | Drive and route | Ground | Hit ordered checkpoints | Shortcut comparison and ghost race |
 | Waypoint Wings | Fly and thread gaps | 3D | Clear airborne checkpoints | Best flight path and closest calls |
 
@@ -41,7 +42,7 @@ When the second app begins, move `Core`, the replay data envelope, backend auth,
 
 ## Backend contract
 
-The database and replay envelope accept `signal-hunt`, `waypoint-rally`, and `waypoint-wings` app keys. Generic `daily_challenge_*` RPCs keep the app shells isolated while reusing authentication, persistence, ranking, and montage delivery. The backend stores:
+The database and replay envelope accept `signal-hunt`, `waypoint-rally`, `waypoint-wings`, and `treasure-hunt` app keys. Generic `daily_challenge_*` RPCs keep the app shells isolated while reusing authentication, persistence, ranking, and montage delivery. The backend stores:
 
 - one immutable config per app/day;
 - authenticated player profiles;
@@ -74,6 +75,11 @@ Before network launch, add server-side replay verification. Re-run the determini
 4. **Waypoint Wings shell**
    - Add the flight controller and vertical course template.
    - Reuse identity, daily seed, replay, leaderboard, cosmetics, and export systems.
+
+5. **Treasure Hunter shell**
+   - Explore the generated Sunken Ruins and Crystal Hollow on foot.
+   - Use a directional detector and active scan pulse to find 12 artifacts in any order.
+   - Reuse identity, attempts, ghosts, leaderboard, and Daily Film systems.
 
 ## Launch test
 

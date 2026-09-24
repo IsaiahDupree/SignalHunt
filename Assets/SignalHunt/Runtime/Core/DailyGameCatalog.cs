@@ -17,6 +17,7 @@ namespace SignalHunt.Core
     public static class DailyGameCatalog
     {
         public const string SignalHuntAppKey = "signal-hunt";
+        public const string TreasureHuntAppKey = "treasure-hunt";
         public const string WaypointRallyAppKey = "waypoint-rally";
         public const string WaypointWingsAppKey = "waypoint-wings";
 
@@ -29,6 +30,15 @@ namespace SignalHunt.Core
                 displayName = "Signal Hunt",
                 playerVerb = "Find every hidden signal",
                 replayHook = "Search routes and missed-item reveals",
+                usesVerticalMovement = false
+            },
+            new()
+            {
+                appKey = TreasureHuntAppKey,
+                modeKey = "daily-treasure-hunt",
+                displayName = "Treasure Hunter",
+                playerVerb = "Find every hidden artifact",
+                replayHook = "Search trails and missed-treasure reveals",
                 usesVerticalMovement = false
             },
             new()

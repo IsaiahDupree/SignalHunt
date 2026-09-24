@@ -1,0 +1,12 @@
+{
+  "name": "Signal Hunt",
+  "platform": "ios",
+  "project": "Unity-iPhone.xcodeproj",
+  "scheme": "Unity-iPhone",
+  "configuration": "Release",
+  "bundle_id": "com.isaiahdupree.signalhunt",
+  "version": "1.0",
+  "team_id": "Y4HDXFWXUV",
+  "profile_name": "Signal Hunt App Store",
+  "archive_jobs": 1
+}
