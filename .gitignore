@@ -27,3 +27,4 @@ Recordings/
 Assets/Resources/SignalHuntRuntimeConfig.asset
 Assets/Resources/SignalHuntRuntimeConfig.asset.meta
 artifacts/supabase-backups/
+artifacts/device-acceptance/
