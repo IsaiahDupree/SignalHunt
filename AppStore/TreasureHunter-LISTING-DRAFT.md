@@ -1,6 +1,6 @@
 # Treasure Hunter: Daily Island — App Store listing draft
 
-Status: updated working copy for iOS 1.0 (`com.isaiahdupree.treasurehunter`). Source reviewed 2026-10-23. The description, keywords, and promotional text have been saved to the exact App Store Connect localization; remaining submission fields and the updated iOS build are not complete.
+Status: source-reviewed iOS 1.0 listing for `com.isaiahdupree.treasurehunter`. App Store listing fields, age rating, content-rights declaration, App Review details, price, support URL, and privacy URL are saved for the exact ASC version. The local-only support/privacy pages are live. One API blocker remains: screenshots (0 uploaded). The attached build predates the local-only source change and must be replaced before review.
 
 ## Proposed metadata
 
@@ -42,7 +42,7 @@ These listings show category conventions, not keyword volume or proof of demand.
 
 ## Open readiness gates
 
-- App-specific support and privacy pages are at the URLs saved in ASC, but their live copy still describes the retired online leaderboard/replay features. Updated page copy is staged in [sonance-apps PR #25](https://github.com/IsaiahDupree/sonance-apps/pull/25); verify the deployed policy matches the local-only build before review.
+- The local-only support and privacy pages are live at [support](https://isaiahdupree.github.io/sonance-apps/treasure-hunter/) and [privacy](https://isaiahdupree.github.io/sonance-apps/treasure-hunter/privacy/) after sonance-apps PR #25 merged. The exact ASC support/privacy URLs were already saved; both routes return HTTP 200.
 - Reconcile App Privacy against the release binary, Unity packages/SDKs, and any data leaving the device. Gameplay source no longer sends an anonymous identity, score, display name, or replay for this app.
 - Re-answer Apple's age-rating questionnaire and content-rights declaration from the replacement iOS build. The current ASC answers still describe the previous online leaderboard/replay features.
 - Decide content-rights declaration from the final asset/license inventory. Removing other players' names and replays does not establish ownership of every art/audio asset.
@@ -51,4 +51,4 @@ These listings show category conventions, not keyword volume or proof of demand.
 - Build the next iOS release from this source and confirm the client has no path that initializes or calls the shared social leaderboard/replay APIs.
 - App Review contact and notes are now saved on the exact iOS 1.0 version. The notes describe the replacement local-only build; do not submit the currently attached pre-change build.
 
-The exact iOS 1.0 API audit now has one blocker: real screenshots for the attached release build (0 uploaded). The price schedule is set to permanent USA $0.00 and read back. App Privacy still requires UI review against the binary and SDKs. The attached VALID build predates the local-only code change and must be replaced before review. No build upload or review submission is included in this draft. The source change passed Unity suites and a macOS preview build; the new iOS build and real iOS screenshots remain open.
+Fresh exact-version ASC audit on 2026-10-23 confirms every API-visible field except screenshots (0 uploaded). The permanent USA $0.00 schedule and all listing metadata, including URLs, are saved and read back. App Privacy still requires UI review against the replacement binary and SDKs. The attached VALID build predates the local-only code change; a replacement iOS build must be prepared and source parity verified before review. No build upload or review submission is included in this draft. Existing Unity suite and macOS preview results do not replace the required iOS build/device capture.
