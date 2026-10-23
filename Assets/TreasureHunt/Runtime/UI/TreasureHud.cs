@@ -1,6 +1,4 @@
 using System;
-using System.Text;
-using SignalHunt.Backend;
 using SignalHunt.Replay;
 using SignalHunt.UI;
 using TreasureHunt.Gameplay;
@@ -65,7 +63,7 @@ namespace TreasureHunt.UI
             _artifacts = FindObjectsByType<TreasureArtifact>();
         }
 
-        public void SetNetworkStatus(string message)
+        public void SetStatus(string message)
         {
             if (_network != null)
             {
@@ -104,35 +102,17 @@ namespace TreasureHunt.UI
             }
         }
 
-        public void SetLeaderboard(LeaderboardEntry[] entries)
+        public void SetLocalRecord(ReplayRun best, int attemptCount)
         {
-            if (entries == null || entries.Length == 0)
+            if (best?.result == null)
             {
-                _leaderboard.text = "NO FULL CLEARS YET\nBE TODAY'S FIRST TREASURE HUNTER";
+                _leaderboard.text = "NO LOCAL RECORD YET\nCOMPLETE A HUNT TO SET YOUR BEST";
                 return;
             }
-            var builder = new StringBuilder();
-            for (var index = 0; index < Mathf.Min(3, entries.Length); index++)
-            {
-                var entry = entries[index];
-                var name = string.IsNullOrWhiteSpace(entry.playerName) ? "HUNTER" : entry.playerName.ToUpperInvariant();
-                if (name.Length > 12)
-                {
-                    name = name.Substring(0, 12);
-                }
-                builder.Append(entry.rank).Append("  ").Append(name).Append("  ")
-                    .Append(FormatMilliseconds(entry.timeMs)).Append("  ×").Append(Mathf.Max(1, entry.attemptCount));
-                if (index < Mathf.Min(3, entries.Length) - 1)
-                {
-                    builder.AppendLine();
-                }
-            }
-            _leaderboard.text = builder.ToString();
-        }
-
-        public void SetLeaderboardUnavailable()
-        {
-            _leaderboard.text = "ONLINE BOARD UNAVAILABLE\nTHIS SEARCH IS SAVED LOCALLY";
+            var result = best.result;
+            _leaderboard.text = $"BEST {FormatMilliseconds(result.timeMs)} · {result.score:N0} PTS\n" +
+                                $"{result.collectedCount}/{result.totalCount} RELICS · {attemptCount} LOCAL " +
+                                $"HUNT{(attemptCount == 1 ? string.Empty : "S")}";
         }
 
         private void BuildCanvas(SignalHunt.Core.DailyChallenge challenge)
@@ -197,9 +177,9 @@ namespace TreasureHunt.UI
                 31, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
             _personalBest = Text("CALCULATING HUNT RECORD…", panel, new Vector2(0.08f, 0.63f),
                 new Vector2(0.92f, 0.71f), 22, FontStyle.Bold, Gold, TextAnchor.MiddleCenter);
-            Text("TODAY'S HUNTERS", panel, new Vector2(0.08f, 0.56f), new Vector2(0.92f, 0.63f), 22,
+            Text("YOUR DAILY RECORD", panel, new Vector2(0.08f, 0.56f), new Vector2(0.92f, 0.63f), 22,
                 FontStyle.Bold, Cyan, TextAnchor.MiddleLeft);
-            _leaderboard = Text("SYNCING SEARCH ROUTES…", panel, new Vector2(0.08f, 0.31f),
+            _leaderboard = Text("YOUR HUNTS STAY ON THIS DEVICE", panel, new Vector2(0.08f, 0.31f),
                 new Vector2(0.92f, 0.56f), 21, FontStyle.Bold, Color.white, TextAnchor.UpperLeft);
             _network = Text(string.Empty, panel, new Vector2(0.08f, 0.24f), new Vector2(0.92f, 0.31f), 18,
                 FontStyle.Normal, Muted, TextAnchor.MiddleCenter);

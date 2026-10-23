@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using SignalHunt.Backend;
 using SignalHunt.Core;
 using SignalHunt.Gameplay;
@@ -20,7 +19,6 @@ namespace TreasureHunt
         private GamePalette _palette;
         private TreasureSession _session;
         private TreasureHud _hud;
-        private SignalHuntApi _api;
         private ReplayRun _latestRun;
         private DailyMontageExporter _filmExporter;
 
@@ -69,7 +67,7 @@ namespace TreasureHunt
             _hud.StyleRequested += () =>
             {
                 _palette.ApplyVehicleColor(PlayerCosmetics.CycleVehicleColor());
-                _hud.SetNetworkStatus("Explorer signal color saved");
+                _hud.SetStatus("Explorer signal color saved");
             };
 
             var recorder = gameObject.AddComponent<TreasureRunRecorder>();
@@ -86,27 +84,12 @@ namespace TreasureHunt
                 ghost.AddComponent<TreasureGhostPlayback>().Initialize(personalBest, _session);
             }
 
-            _api = gameObject.AddComponent<SignalHuntApi>();
-            _api.Initialize();
-            StartCoroutine(_api.FetchTopGhost(challenge, (topGhost, error) =>
-            {
-                if (topGhost?.frames == null || topGhost.frames.Count < 2)
-                {
-                    return;
-                }
-                var ghost = ExplorerFactory.CreateReplayVisual(_palette, topGhost, 1, true);
-                ghost.name = "Daily Leader Search Ghost";
-                if (menuCamera != null)
-                {
-                    menuCamera.HideActor(ghost);
-                }
-                ghost.AddComponent<TreasureGhostPlayback>().Initialize(topGhost, _session);
-            }));
+            _hud.SetStatus("Your hunts and replays stay on this device");
 
             _filmExporter = gameObject.AddComponent<DailyMontageExporter>();
             _filmExporter.Initialize(camera, explorer.transform, _palette,
                 (run, index) => ExplorerFactory.CreateReplayVisual(_palette, run, index, false));
-            _filmExporter.StatusChanged += _hud.SetNetworkStatus;
+            _filmExporter.StatusChanged += _hud.SetStatus;
             var gameStarted = false;
             _filmExporter.PresentationModeChanged += active => _hud.SetPresentationMode(active || !gameStarted);
             _filmExporter.PresentationModeChanged += active =>
@@ -173,84 +156,19 @@ namespace TreasureHunt
         {
             _latestRun = run;
             var outcome = ReplayStore.SaveAttempt(run);
+            var personalBest = ReplayStore.LoadBest(_session.Challenge.challengeId);
             _hud.SetRunOutcome(outcome, run.result);
-            _hud.SetNetworkStatus(outcome.isPersonalBest
-                ? $"Hunt {outcome.attemptNumber} is your new record · syncing hunters…"
-                : $"Hunt {outcome.attemptNumber} saved · syncing hunters…");
-            StartCoroutine(_api.SubmitAndFetchLeaderboard(_session.Challenge, run, leaderboard =>
-            {
-                if (!string.IsNullOrEmpty(leaderboard.error))
-                {
-                    _hud.SetNetworkStatus(leaderboard.error);
-                    _hud.SetLeaderboardUnavailable();
-                    return;
-                }
-                _hud.SetLeaderboard(leaderboard.entries);
-                var rank = Array.Find(leaderboard.entries,
-                    entry => string.Equals(entry.playerName, PlayerIdentity.DisplayName, StringComparison.Ordinal));
-                _hud.SetNetworkStatus(rank == null
-                    ? $"Daily hunt board synced · {leaderboard.entries.Length} hunters"
-                    : $"Daily hunt rank #{rank.rank} · {leaderboard.entries.Length} hunters");
-            }));
+            _hud.SetLocalRecord(personalBest, ReplayStore.GetAttemptCount(_session.Challenge.challengeId));
+            _hud.SetStatus($"Hunt {outcome.attemptNumber} saved on this device");
         }
 
         private IEnumerator ExportDailyFilm()
         {
             var local = ReplayStore.LoadHistory(_session.Challenge.challengeId, 16);
-            if (!_api.IsConfigured)
-            {
-                _hud.SetNetworkStatus(
-                    $"Building film from {local.Length} search{(local.Length == 1 ? string.Empty : "es")} on this device");
-                _filmExporter.Export(local);
-                yield break;
-            }
-            _hud.SetNetworkStatus("Loading today's hunters…");
-            ReplayRun[] remote = null;
-            string error = null;
-            yield return _api.FetchDailyMontage(_session.Challenge, 16, (runs, message) =>
-            {
-                remote = runs;
-                error = message;
-            });
-            var merged = MergeRuns(remote, local, 16);
-            _hud.SetNetworkStatus(string.IsNullOrEmpty(error)
-                ? $"Loaded {merged.Length} hunter{(merged.Length == 1 ? string.Empty : "s")} for today's film"
-                : $"{error} · using {merged.Length} local search{(merged.Length == 1 ? string.Empty : "es")}");
-            _filmExporter.Export(merged);
-        }
-
-        private static ReplayRun[] MergeRuns(IReadOnlyList<ReplayRun> primary, IReadOnlyList<ReplayRun> secondary,
-            int limit)
-        {
-            var merged = new List<ReplayRun>();
-            var ids = new HashSet<string>(StringComparer.Ordinal);
-            AddRuns(primary, merged, ids, limit);
-            AddRuns(secondary, merged, ids, limit);
-            return merged.ToArray();
-        }
-
-        private static void AddRuns(IReadOnlyList<ReplayRun> source, ICollection<ReplayRun> destination,
-            ISet<string> ids, int limit)
-        {
-            if (source == null)
-            {
-                return;
-            }
-            for (var index = 0; index < source.Count && destination.Count < limit; index++)
-            {
-                var run = source[index];
-                if (run?.frames == null || run.frames.Count < 2)
-                {
-                    continue;
-                }
-                var id = string.IsNullOrWhiteSpace(run.clientRunId)
-                    ? $"legacy-{DailyChallenge.StableHash(run.playerId + run.challengeId + run.result?.timeMs)}"
-                    : run.clientRunId;
-                if (ids.Add(id))
-                {
-                    destination.Add(run);
-                }
-            }
+            _hud.SetStatus(
+                $"Building film from {local.Length} search{(local.Length == 1 ? string.Empty : "es")} on this device");
+            _filmExporter.Export(local);
+            yield break;
         }
 
         private static FollowCamera BuildCamera(ExplorerController explorer, DailyChallenge challenge)
