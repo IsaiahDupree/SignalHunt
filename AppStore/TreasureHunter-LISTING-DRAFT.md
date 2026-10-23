@@ -42,13 +42,13 @@ These listings show category conventions, not keyword volume or proof of demand.
 
 ## Open readiness gates
 
-- App-specific support and privacy pages are live at the URLs saved in ASC, but still describe the retired online leaderboard/replay features. Updated page copy is staged in the `sonance-apps` repository and must be merged and read back before submission.
+- App-specific support and privacy pages are at the URLs saved in ASC, but their live copy still describes the retired online leaderboard/replay features. Updated page copy is staged in [sonance-apps PR #25](https://github.com/IsaiahDupree/sonance-apps/pull/25); verify the deployed policy matches the local-only build before review.
 - Reconcile App Privacy against the release binary, Unity packages/SDKs, and any data leaving the device. Gameplay source no longer sends an anonymous identity, score, display name, or replay for this app.
 - Re-answer Apple's age-rating questionnaire and content-rights declaration from the replacement iOS build. The current ASC answers still describe the previous online leaderboard/replay features.
 - Decide content-rights declaration from the final asset/license inventory. Removing other players' names and replays does not establish ownership of every art/audio asset.
-- Decide initial price. The app currently has no implemented IAP, subscription, or ad SDK. Adjacent games are commonly free with optional purchases, but that is not measured willingness-to-pay for this game.
+- Permanent U.S. $0.00 base price is set and read back as a first-release validation choice. This does not assert measured willingness to pay or create a paid offer; the source has no IAP, subscription, or ad SDK.
 - Upload a full set of real iPhone screenshots. No screenshot files are present in this checkout; capture requires the signed iOS app on a device or simulator.
 - Build the next iOS release from this source and confirm the client has no path that initializes or calls the shared social leaderboard/replay APIs.
 - App Review contact and notes are now saved on the exact iOS 1.0 version. The notes describe the replacement local-only build; do not submit the currently attached pre-change build.
 
-No build upload or review submission is included in this draft. The source change passed the current Unity suites and a macOS preview build; iOS build, real iOS screenshots, privacy, price, and review-contact gates remain open.
+The exact iOS 1.0 API audit now has one blocker: real screenshots for the attached release build (0 uploaded). The price schedule is set to permanent USA $0.00 and read back. App Privacy still requires UI review against the binary and SDKs. The attached VALID build predates the local-only code change and must be replaced before review. No build upload or review submission is included in this draft. The source change passed Unity suites and a macOS preview build; the new iOS build and real iOS screenshots remain open.
