@@ -1,0 +1,12 @@
+{
+  "name": "Waypoint Rally",
+  "platform": "ios",
+  "project": "Unity-iPhone.xcodeproj",
+  "scheme": "Unity-iPhone",
+  "configuration": "Release",
+  "bundle_id": "com.isaiahdupree.waypointrally",
+  "version": "1.0",
+  "team_id": "Y4HDXFWXUV",
+  "profile_name": "Waypoint Rally App Store",
+  "archive_jobs": 1
+}

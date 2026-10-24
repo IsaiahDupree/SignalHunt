@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace SignalHunt.UI
 {
-    public sealed class HoldControlButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
+    public sealed class HoldControlButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         private VehicleControl _control;
         private Image _image;
@@ -25,12 +25,6 @@ namespace SignalHunt.UI
         }
 
         public void OnPointerUp(PointerEventData eventData)
-        {
-            VehicleInputState.Set(_control, false);
-            SetPressed(false);
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
         {
             VehicleInputState.Set(_control, false);
             SetPressed(false);

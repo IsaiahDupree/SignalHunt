@@ -1,0 +1,14 @@
+{
+  "name": "TreasureHunt.Tests",
+  "rootNamespace": "TreasureHunt.Tests",
+  "references": [
+    "SignalHunt.Runtime",
+    "TreasureHunt.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

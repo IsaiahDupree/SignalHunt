@@ -10,19 +10,32 @@ namespace WaypointRally.World
             GamePalette palette, Func<int, string, bool> onCheckpointPassed)
         {
             var root = new GameObject("Daily Rally Course");
+            var island = challenge.stageKey == "island-loop";
             var town = challenge.stageKey == "harbor-town";
-            PrimitiveFactory.Cube(town ? "Harbor Ground" : "Dustlands Ground", root.transform,
-                new Vector3(0f, -0.65f, 0f), new Vector3(220f, 1.2f, 220f),
-                town ? palette.GrassMaterials[1] : palette.SandMaterials[0]);
-            if (town)
+            if (island)
             {
-                PrimitiveFactory.Cube("Harbor Water", root.transform, new Vector3(-126f, -0.9f, 0f),
-                    new Vector3(34f, 0.7f, 220f), palette.Water, false);
+                PrimitiveFactory.Cube("Island Water", root.transform, new Vector3(0f, -1.25f, 0f),
+                    new Vector3(320f, 0.7f, 320f), palette.Water, false);
+                PrimitiveFactory.Cylinder("Island Sand", root.transform, new Vector3(0f, -0.72f, 0f),
+                    new Vector3(220f, 0.7f, 220f), palette.SandMaterials[0], false);
+                PrimitiveFactory.Cylinder("Island Grass", root.transform, new Vector3(0f, -0.42f, 0f),
+                    new Vector3(204f, 0.62f, 204f), palette.GrassMaterials[1], false);
+            }
+            else
+            {
+                PrimitiveFactory.Cube(town ? "Harbor Ground" : "Dustlands Ground", root.transform,
+                    new Vector3(0f, -0.65f, 0f), new Vector3(220f, 1.2f, 220f),
+                    town ? palette.GrassMaterials[1] : palette.SandMaterials[0]);
+                if (town)
+                {
+                    PrimitiveFactory.Cube("Harbor Water", root.transform, new Vector3(-126f, -0.9f, 0f),
+                        new Vector3(34f, 0.7f, 220f), palette.Water, false);
+                }
             }
 
             foreach (var road in layout.roads)
             {
-                BuildRoad(root.transform, road, town, palette);
+                BuildRoad(root.transform, road, island || town, palette);
             }
             foreach (var building in layout.buildings)
             {
@@ -34,7 +47,7 @@ namespace WaypointRally.World
             }
             foreach (var decoration in layout.decorations)
             {
-                if (town)
+                if (island || town)
                 {
                     BuildHarborTree(root.transform, decoration, palette);
                 }
@@ -54,7 +67,7 @@ namespace WaypointRally.World
             return root;
         }
 
-        private static void BuildRoad(Transform parent, RallyRoadDefinition road, bool town, GamePalette palette)
+        private static void BuildRoad(Transform parent, RallyRoadDefinition road, bool paved, GamePalette palette)
         {
             var direction = road.end - road.start;
             direction.y = 0f;
@@ -64,11 +77,11 @@ namespace WaypointRally.World
             var shoulder = PrimitiveFactory.Cube("Road Shoulder", parent, midpoint,
                 new Vector3(road.width + 2.4f, 0.18f, length + 1.2f), palette.RoadShoulder, false);
             shoulder.transform.localRotation = heading;
-            var surface = PrimitiveFactory.Cube(town ? "Harbor Road" : "Dust Track", parent,
+            var surface = PrimitiveFactory.Cube(paved ? "Island Road" : "Dust Track", parent,
                 midpoint + Vector3.up * 0.10f, new Vector3(road.width, 0.16f, length),
-                town ? palette.IslandRoad : palette.SandMaterials[1], false);
+                paved ? palette.IslandRoad : palette.SandMaterials[1], false);
             surface.transform.localRotation = heading;
-            if (!town)
+            if (!paved)
             {
                 return;
             }

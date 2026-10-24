@@ -5,6 +5,7 @@ namespace WaypointRally.Core
 {
     public enum RallyStage
     {
+        IslandLoop,
         HarborTown,
         Dustlands
     }
@@ -14,12 +15,13 @@ namespace WaypointRally.Core
         public static DailyChallenge ForUtcDate(DateTime utcDate, RallyStage? forcedStage = null)
         {
             var date = utcDate.ToUniversalTime().Date;
-            var stage = forcedStage ?? (date.DayOfYear % 2 == 0 ? RallyStage.HarborTown : RallyStage.Dustlands);
+            var stage = forcedStage ?? RallyStage.IslandLoop;
+            var island = stage == RallyStage.IslandLoop;
             var town = stage == RallyStage.HarborTown;
-            var stageKey = town ? "harbor-town" : "dustlands";
-            var displayName = town ? "Turbo Harbor" : "Dustlands Run";
-            var theme = town ? "coastal" : "sunset";
-            var template = town ? "rally-harbor-town-v1" : "rally-dustlands-v1";
+            var stageKey = island ? "island-loop" : town ? "harbor-town" : "dustlands";
+            var displayName = island ? "Palm Coast Loop" : town ? "Turbo Harbor" : "Dustlands Run";
+            var theme = island ? "sunny-island" : town ? "coastal" : "sunset";
+            var template = island ? "rally-island-loop-v2" : town ? "rally-harbor-town-v1" : "rally-dustlands-v1";
             var dateKey = date.ToString("yyyy-MM-dd");
             var identity = $"{dateKey}|{DailyGameCatalog.WaypointRallyAppKey}|{stageKey}|{theme}|standard|{template}";
             var generationSeed = DailyChallenge.StableHash(identity);
@@ -35,7 +37,7 @@ namespace WaypointRally.Core
                 theme = theme,
                 difficulty = "standard",
                 worldTemplate = template,
-                generationVersion = "rally-course-generator-v1",
+                generationVersion = island ? "rally-course-generator-v2" : "rally-course-generator-v1",
                 stageKey = stageKey,
                 stageDisplayName = displayName,
                 displaySeed = displaySeed,
@@ -65,8 +67,9 @@ namespace WaypointRally.Core
             }
             return arguments[marker + 1].ToLowerInvariant() switch
             {
-                "town" or "harbor-town" => RallyStage.HarborTown,
-                "dust" or "dustlands" => RallyStage.Dustlands,
+                "island" or "island-loop" => RallyStage.IslandLoop,
+                "town" or "harbor-town" => RallyStage.IslandLoop,
+                "dust" or "dustlands" => RallyStage.IslandLoop,
                 _ => null
             };
         }

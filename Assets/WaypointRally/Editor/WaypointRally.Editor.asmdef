@@ -3,6 +3,7 @@
   "rootNamespace": "WaypointRally.Editor",
   "references": [
     "SignalHunt.Runtime",
+    "SignalHunt.Editor",
     "WaypointRally.Runtime"
   ],
   "includePlatforms": [

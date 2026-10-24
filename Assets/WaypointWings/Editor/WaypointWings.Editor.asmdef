@@ -3,6 +3,7 @@
   "rootNamespace": "WaypointWings.Editor",
   "references": [
     "SignalHunt.Runtime",
+    "SignalHunt.Editor",
     "WaypointWings.Runtime"
   ],
   "includePlatforms": [
